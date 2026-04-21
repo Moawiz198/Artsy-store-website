@@ -215,7 +215,7 @@ export default function ArtStore() {
             <p style={{color:"#666",fontSize:14,marginBottom:24}}>Please enter the owner password.</p>
             <form onSubmit={(e)=>{
               e.preventDefault();
-              if(passInput === "@Aferay198") setAdminAuth(true);
+              if(passInput === import.meta.env.VITE_ADMIN_PASSWORD) setAdminAuth(true);
               else alert("Incorrect password!");
             }}>
               <input type="password" placeholder="Password" autoFocus value={passInput} onChange={e=>setPassInput(e.target.value)} style={{width:"100%",padding:14,borderRadius:10,border:"1.5px solid #eee",marginBottom:20,textAlign:"center",fontSize:16}}/>

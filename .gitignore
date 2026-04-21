@@ -1,0 +1,7 @@
+node_modules/
+.DS_Store
+.vscode/
+artsy-store/node_modules/
+backend/node_modules/
+backend/.env
+artsy-store/.env

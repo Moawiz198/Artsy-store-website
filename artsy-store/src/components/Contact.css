@@ -1,0 +1,118 @@
+.contact {
+  padding: 100px 24px;
+  background: var(--color-jade);
+  color: #fff;
+}
+
+.contact-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 40px;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .contact { padding: 60px 20px; }
+  .contact-title { font-size: 32px; }
+  .contact-form { padding: 24px; }
+}
+
+.contact-tagline {
+  color: var(--color-gold);
+  letter-spacing: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.contact-title {
+  font-family: var(--font-serif);
+  font-size: 42px;
+  margin-bottom: 24px;
+}
+
+.contact-text {
+  color: #a8b8a4;
+  font-size: 17px;
+  line-height: 1.7;
+  margin-bottom: 40px;
+}
+
+.contact-details {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.contact-detail-item {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.contact-detail-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(201, 168, 76, 0.1);
+  border: 1px solid var(--color-gold);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.contact-detail-label {
+  font-size: 12px;
+  color: var(--color-gold);
+  margin: 0;
+  font-weight: 700;
+}
+
+.contact-detail-value {
+  font-size: 16px;
+  margin: 0;
+  font-weight: 500;
+}
+
+.contact-form {
+  background: #fff;
+  padding: 40px;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--color-jade);
+  letter-spacing: 1.5px;
+}
+
+.contact-form input, 
+.contact-form textarea {
+  padding: 16px;
+  background: #fcfcfc;
+  border-radius: 12px;
+  border: 1.5px solid #eee;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  color: #1a1a1a;
+}
+
+.contact-form input:focus, 
+.contact-form textarea:focus {
+  outline: none;
+  border-color: var(--color-gold);
+}

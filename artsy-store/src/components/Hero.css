@@ -1,0 +1,226 @@
+.hero {
+  min-height: 85vh;
+  padding: 100px 24px;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-glow-1 {
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 50%;
+  height: 50%;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+  filter: blur(80px);
+}
+
+.hero-glow-2 {
+  position: absolute;
+  bottom: -10%;
+  right: -10%;
+  width: 50%;
+  height: 50%;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.05) 0%, transparent 70%);
+  filter: blur(80px);
+}
+
+.hero-tagline {
+  color: var(--color-gold);
+  letter-spacing: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.hero-insta-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.hero-insta-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: rgba(201, 168, 76, 0.1);
+  border: 1px solid var(--color-gold);
+  border-radius: 50%;
+  color: var(--color-gold);
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.hero-title {
+  font-family: var(--font-serif);
+  font-size: clamp(40px, 8vw, 84px);
+  font-weight: 700;
+  line-height: 1.0;
+  margin: 0 auto 4px;
+  max-width: 900px;
+  color: var(--color-gold);
+}
+
+.hero-subtitle {
+  color: #b0a890;
+  font-size: 20px;
+  max-width: 520px;
+  margin: 0 auto 24px;
+  line-height: 1.2;
+  font-weight: 400;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-number {
+  font-family: var(--font-serif);
+  font-size: 32px;
+  color: var(--color-gold);
+  font-weight: 700;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #9ca3af; /* Gray 400 */
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: 4px;
+}
+
+.btn-solid-gold {
+  background: var(--color-gold);
+  color: var(--color-jade);
+  padding: 16px 36px;
+  border-radius: 4px;
+  font-weight: 800;
+  text-decoration: none;
+  font-size: 14px;
+  letter-spacing: 1px;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+  transition: all 0.3s;
+}
+
+.btn-solid-gold:hover {
+  box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-outline-gold {
+  background: transparent;
+  border: 1.5px solid var(--color-gold);
+  color: var(--color-gold);
+  padding: 16px 36px;
+  border-radius: 4px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 14px;
+  letter-spacing: 1px;
+  transition: all 0.3s;
+}
+
+.btn-outline-gold:hover {
+  background: rgba(212, 175, 55, 0.05);
+}
+
+@keyframes bouncyPop {
+  0%, 100% { transform: scale(1) translateY(0); }
+  50% { transform: scale(1.05) translateY(-20px); }
+}
+
+.animate-pop {
+  animation: bouncyPop 2s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+}
+
+.hero-subtitle {
+  color: #b0a890;
+  font-size: 20px;
+  max-width: 520px;
+  margin: 0 auto 20px;
+  line-height: 1.4;
+}
+
+.hero-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.btn-primary {
+  display: inline-block;
+  background: var(--color-gold);
+  color: var(--color-jade);
+  padding: 14px 42px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 1px;
+  text-decoration: none;
+  box-shadow: 0 8px 32px rgba(201, 168, 76, 0.35);
+  border: none;
+  cursor: pointer;
+}
+
+.btn-outline {
+  display: inline-block;
+  background: transparent;
+  color: var(--color-gold);
+  border: 2px solid var(--color-gold);
+  padding: 12px 42px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.hero-stats {
+  margin-top: 60px;
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-number {
+  font-family: var(--font-serif);
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--color-gold);
+}
+
+.stat-label {
+  color: #8a9880;
+  font-size: 13px;
+  letter-spacing: 2px;
+  margin-top: 4px;
+}

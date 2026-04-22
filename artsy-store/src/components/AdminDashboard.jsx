@@ -10,6 +10,8 @@ export default function AdminDashboard({
   const [editingProduct, setEditingProduct] = React.useState(null);
   const [slipData, setSlipData] = React.useState(null);
 
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5055';
+
   return (
     <div style={{background:"#f3f4f6",minHeight:"100vh",padding:40,fontFamily:"var(--font-sans)"}}>
       <div style={{maxWidth:1200,margin:"0 auto"}}>
@@ -26,9 +28,9 @@ export default function AdminDashboard({
           </div>
           <div style={{display:"flex",gap:12}}>
             <button onClick={()=>{
-              fetch('http://localhost:5055/api/orders').then(r=>r.json()).then(setOrders);
-              fetch('http://localhost:5055/api/custom-requests').then(r=>r.json()).then(setRequests);
-              fetch('http://localhost:5055/api/products').then(r=>r.json()).then(setDbProducts);
+              fetch('${API_URL}/api/orders').then(r=>r.json()).then(setOrders);
+              fetch('${API_URL}/api/custom-requests').then(r=>r.json()).then(setRequests);
+              fetch('${API_URL}/api/products').then(r=>r.json()).then(setDbProducts);
               alert("Data Refreshed!");
             }} style={{padding:"12px 20px",borderRadius:10,background:"#fff",border:"1.5px solid #e5e7eb",fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",gap:8}}>
               🔄 Refresh
@@ -83,14 +85,14 @@ export default function AdminDashboard({
                         <button 
                           onClick={async ()=>{
                             try {
-                              const res = await fetch('http://localhost:5055/api/orders/'+o._id, {
+                              const res = await fetch('${API_URL}/api/orders/'+o._id, {
                                 method: 'PATCH',
                                 headers: {'Content-Type':'application/json'},
                                 body: JSON.stringify({isPaid: !o.isPaid})
                               });
                               if(res.ok) {
                                 alert("Advance status updated!");
-                                fetch('http://localhost:5055/api/orders').then(r=>r.json()).then(setOrders);
+                                fetch('${API_URL}/api/orders').then(r=>r.json()).then(setOrders);
                               }
                             } catch(e) { alert("Server error"); }
                           }}
@@ -100,14 +102,14 @@ export default function AdminDashboard({
                         <button 
                           onClick={async ()=>{
                             try {
-                              const res = await fetch('http://localhost:5055/api/orders/'+o._id, {
+                              const res = await fetch('${API_URL}/api/orders/'+o._id, {
                                 method: 'PATCH',
                                 headers: {'Content-Type':'application/json'},
                                 body: JSON.stringify({isFullPaid: !o.isFullPaid})
                               });
                               if(res.ok) {
                                 alert("Full payment status updated!");
-                                fetch('http://localhost:5055/api/orders').then(r=>r.json()).then(setOrders);
+                                fetch('${API_URL}/api/orders').then(r=>r.json()).then(setOrders);
                               }
                             } catch(e) { alert("Server error"); }
                           }}
@@ -133,11 +135,11 @@ export default function AdminDashboard({
             e.preventDefault();
             const formData = new FormData(e.target);
             try {
-              const res = await fetch('http://localhost:5055/api/products', { method: 'POST', body: formData });
+              const res = await fetch('${API_URL}/api/products', { method: 'POST', body: formData });
               if(res.ok) { 
                 alert("Product Added Successfully!"); 
                 e.target.reset(); 
-                fetch('http://localhost:5055/api/products').then(r=>r.json()).then(setDbProducts);
+                fetch('${API_URL}/api/products').then(r=>r.json()).then(setDbProducts);
               } else {
                 const err = await res.json();
                 alert(err.error || "Failed to add product");
@@ -205,12 +207,12 @@ export default function AdminDashboard({
                 onClick={async ()=>{
                   if(window.confirm("Copy all listed shop items to Database so you can edit them?")) {
                     try {
-                      const res = await fetch('http://localhost:5055/api/products/bulk', {
+                      const res = await fetch('${API_URL}/api/products/bulk', {
                         method: 'POST',
                         headers: {'Content-Type':'application/json'},
                         body: JSON.stringify({ products: initialProducts })
                       });
-                      if(res.ok) { alert("Products synced!"); fetch('http://localhost:5055/api/products').then(r=>r.json()).then(setDbProducts); }
+                      if(res.ok) { alert("Products synced!"); fetch('${API_URL}/api/products').then(r=>r.json()).then(setDbProducts); }
                     } catch(e) { alert("Sync failed"); }
                   }
                 }}
@@ -244,12 +246,12 @@ export default function AdminDashboard({
                         const newPrice = prompt("Update Price for " + p.name, p.price);
                         if(newPrice) {
                           try {
-                            const res = await fetch('http://localhost:5055/api/products/'+p._id, {
+                            const res = await fetch('${API_URL}/api/products/'+p._id, {
                               method: 'PATCH',
                               headers: {'Content-Type':'application/json'},
                               body: JSON.stringify({ price: Number(newPrice) })
                             });
-                            if(res.ok) { alert("Price updated!"); fetch('http://localhost:5055/api/products').then(r=>r.json()).then(setDbProducts); }
+                            if(res.ok) { alert("Price updated!"); fetch('${API_URL}/api/products').then(r=>r.json()).then(setDbProducts); }
                           } catch(e) { alert("Error"); }
                         }
                       }} style={{padding:"6px 10px",borderRadius:6,border:"1.5px solid #10b981",color:"#10b981",background:"#fff",fontSize:11,fontWeight:700,cursor:"pointer"}}>💰 Price</button>
@@ -258,8 +260,8 @@ export default function AdminDashboard({
                       
                       <button onClick={async ()=>{
                         if(window.confirm("Delete?")) {
-                          await fetch('http://localhost:5055/api/products/'+p._id, { method: 'DELETE' });
-                          fetch('http://localhost:5055/api/products').then(r=>r.json()).then(setDbProducts);
+                          await fetch('${API_URL}/api/products/'+p._id, { method: 'DELETE' });
+                          fetch('${API_URL}/api/products').then(r=>r.json()).then(setDbProducts);
                         }
                       }} style={{padding:"6px 10px",borderRadius:6,background:"#fee2e2",color:"#ef4444",border:"none",fontSize:11,fontWeight:700,cursor:"pointer"}}>🗑️</button>
                     </td>
@@ -306,12 +308,12 @@ export default function AdminDashboard({
                       <div style={{display:"flex",flexDirection:"column",gap:8}}>
                         <div style={{display:"flex",gap:4}}>
                           <button onClick={async ()=>{
-                            await fetch('http://localhost:5055/api/custom-requests/'+r._id, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ status: 'Accepted' }) });
-                            fetch('http://localhost:5055/api/custom-requests').then(r=>r.json()).then(setRequests);
+                            await fetch('${API_URL}/api/custom-requests/'+r._id, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ status: 'Accepted' }) });
+                            fetch('${API_URL}/api/custom-requests').then(r=>r.json()).then(setRequests);
                           }} style={{flex:1,padding:6,borderRadius:4,background:"#10b981",color:"#fff",border:"none",fontSize:10}}>Accept</button>
                           <button onClick={async ()=>{
-                            await fetch('http://localhost:5055/api/custom-requests/'+r._id, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ status: 'Rejected' }) });
-                            fetch('http://localhost:5055/api/custom-requests').then(r=>r.json()).then(setRequests);
+                            await fetch('${API_URL}/api/custom-requests/'+r._id, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ status: 'Rejected' }) });
+                            fetch('${API_URL}/api/custom-requests').then(r=>r.json()).then(setRequests);
                           }} style={{flex:1,padding:6,borderRadius:4,background:"#ef4444",color:"#fff",border:"none",fontSize:10}}>Reject</button>
                         </div>
                         <button onClick={()=>{

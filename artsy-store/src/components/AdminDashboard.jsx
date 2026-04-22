@@ -426,7 +426,10 @@ export default function AdminDashboard({
 
               <div style={{display:"flex",flexDirection:"column",gap:12}}>
                 <div style={{display:"flex",justifyContent:"space-between",fontSize:14}}>
-                  <span style={{color:"#666"}}>{slipData.category === 'Crochet' ? '🧶 Material Cost' : '🖼️ Canvas Cost'}</span>
+                  <span style={{color:"#666"}}>
+                    {slipData.category === 'Crochet' ? '🧶 Material Cost' : '🖼️ Canvas Cost'} 
+                    <span style={{fontSize:11, marginLeft:6, background:"#f3f4f6", padding:"2px 6px", borderRadius:4}}>Size: {slipData.size}</span>
+                  </span>
                   <span style={{fontWeight:700}}>Rs. {slipData.baseCost}</span>
                 </div>
                 <div style={{display:"flex",justifyContent:"space-between",fontSize:14}}>

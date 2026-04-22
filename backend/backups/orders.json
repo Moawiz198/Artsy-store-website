@@ -1,0 +1,76 @@
+[
+  {
+    "customerName": "uuuu",
+    "whatsapp": "03037592198",
+    "address": "gfdxcvbn",
+    "paymentMethod": "70% Advance Paid",
+    "items": [
+      {
+        "id": 2,
+        "name": "Abstract Couple Portrait",
+        "price": 1400,
+        "image": "/src/assets/1400.jpg",
+        "tag": "Portrait"
+      }
+    ],
+    "totalAmount": 1400,
+    "advanceAmount": 980,
+    "_id": "1776758801745",
+    "createdAt": "2026-04-21T08:06:41.745Z",
+    "isLocal": true,
+    "isPaid": true,
+    "isFullPaid": true
+  },
+  {
+    "customerName": "Moawiz Sajid Sajid",
+    "whatsapp": "03037592918",
+    "address": "Basti Amnat Ali\nAll",
+    "paymentMethod": "70% Advance Paid",
+    "items": [
+      {
+        "id": "2-1776890504149",
+        "name": "Abstract Couple Portrait (12x16, Vertical)",
+        "price": 1650,
+        "image": "/src/assets/1400.jpg",
+        "tag": "Portrait",
+        "customOptions": {
+          "size": "12x16",
+          "orientation": "Vertical",
+          "isCustom": false,
+          "requirements": ""
+        }
+      }
+    ],
+    "totalAmount": 1650,
+    "advanceAmount": 1155,
+    "_id": "1776890518196",
+    "createdAt": "2026-04-22T20:41:58.196Z",
+    "isLocal": true
+  },
+  {
+    "customerName": "ooooooo",
+    "whatsapp": "03037592918",
+    "address": "Basti Amnat Ali",
+    "paymentMethod": "70% Advance Paid",
+    "items": [
+      {
+        "id": "2-1776890542481",
+        "name": "Abstract Couple Portrait (12x16, Vertical, Custom)",
+        "price": 2150,
+        "image": "/src/assets/1400.jpg",
+        "tag": "Portrait",
+        "customOptions": {
+          "size": "12x16",
+          "orientation": "Vertical",
+          "isCustom": true,
+          "requirements": ""
+        }
+      }
+    ],
+    "totalAmount": 2150,
+    "advanceAmount": 1505,
+    "_id": "1776890558400",
+    "createdAt": "2026-04-22T20:42:38.401Z",
+    "isLocal": true
+  }
+]

@@ -10,6 +10,7 @@ import AdminDashboard from './components/AdminDashboard';
 import CartDrawer from './components/CartDrawer';
 import Mission from './components/Mission';
 import Contact from './components/Contact';
+import ConfigurableProductModal from './components/ConfigurableProductModal';
 
 // Assets
 import logo    from './assets/logo.jpg';
@@ -64,17 +65,18 @@ function CustomOrderModal({ setCustomModalOpen }) {
 
           <form onSubmit={async (e)=>{
             e.preventDefault();
-            const data = new FormData(e.target);
-            const formData = { 
-              name: data.get('name'), 
-              whatsapp: data.get('whatsapp'), 
-              surah: category === 'Art' ? data.get('surah') : 'Crochet Request', 
-              size: category === 'Art' ? data.get('size') : 'Custom', 
-              colors: category === 'Crochet' ? data.get('colors') : 'N/A',
-              requirements: data.get('requirements') 
-            };
+            const formData = new FormData(e.target);
+            
+            // Add category-specific logic
+            formData.set('surah', category === 'Art' ? formData.get('surah') : 'Crochet Request');
+            formData.set('size', category === 'Art' ? formData.get('size') : 'Custom');
+            formData.set('colors', category === 'Crochet' ? formData.get('colors') : 'N/A');
+
             try {
-              const res = await fetch('http://localhost:5055/api/custom-request', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
+              const res = await fetch('http://localhost:5055/api/custom-request', { 
+                method: 'POST', 
+                body: formData // No Content-Type header needed for FormData with files
+              });
               if (res.ok) { 
                 alert("Request sent successfully!"); 
                 setCustomModalOpen(false); 
@@ -87,24 +89,17 @@ function CustomOrderModal({ setCustomModalOpen }) {
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
               <div style={{display:"flex",flexDirection:"column",gap:6}}>
                 <label style={{fontSize:11,fontWeight:700,color:"#666"}}>YOUR NAME</label>
-                <input 
-                  name="name" 
-                  placeholder="Ahmad Hassan" 
-                  required 
-                  onInput={(e) => e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '')}
-                  style={{padding:14,borderRadius:10,border:"1.5px solid #eee",fontSize:15}}
-                />
+                <input name="name" placeholder="Ahmad Hassan" required onInput={(e) => e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '')} style={{padding:14,borderRadius:10,border:"1.5px solid #eee",fontSize:15}}/>
               </div>
               <div style={{display:"flex",flexDirection:"column",gap:6}}>
-                <label style={{fontSize:11,fontWeight:700,color:"#666"}}>INSTAGRAM USERNAME / NUMBER</label>
-                <input 
-                  name="whatsapp" 
-                  type="text" 
-                  placeholder="@your_id or Phone" 
-                  required 
-                  style={{padding:14,borderRadius:10,border:"1.5px solid #eee",fontSize:15}}
-                />
+                <label style={{fontSize:11,fontWeight:700,color:"#666"}}>WHATSAPP NUMBER</label>
+                <input name="whatsapp" type="text" placeholder="+92 300..." required style={{padding:14,borderRadius:10,border:"1.5px solid #eee",fontSize:15}}/>
               </div>
+            </div>
+
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              <label style={{fontSize:11,fontWeight:700,color:"#666"}}>INSTAGRAM ID (OPTIONAL)</label>
+              <input name="instagram" placeholder="@your_id" style={{padding:14,borderRadius:10,border:"1.5px solid #eee",fontSize:15}}/>
             </div>
 
             {category === 'Art' ? (
@@ -115,7 +110,14 @@ function CustomOrderModal({ setCustomModalOpen }) {
                 </div>
                 <div style={{display:"flex",flexDirection:"column",gap:6}}>
                   <label style={{fontSize:11,fontWeight:700,color:"#666"}}>CANVAS SIZE</label>
-                  <input name="size" placeholder="e.g. 12x12 inches" required style={{padding:14,borderRadius:10,border:"1.5px solid #eee",fontSize:15}}/>
+                  <select name="size" style={{padding:14,borderRadius:10,border:"1.5px solid #eee",fontSize:15,background:"#fff"}}>
+                    <option value="4x4">4x4 inches</option>
+                    <option value="8x8">8x8 inches</option>
+                    <option value="12x16">12x16 inches</option>
+                    <option value="16x20">16x20 inches</option>
+                    <option value="24x36">24x36 inches</option>
+                    <option value="Custom">Custom Size</option>
+                  </select>
                 </div>
               </div>
             ) : (
@@ -126,8 +128,31 @@ function CustomOrderModal({ setCustomModalOpen }) {
             )}
 
             <div style={{display:"flex",flexDirection:"column",gap:6}}>
-              <label style={{fontSize:11,fontWeight:700,color:"#666"}}>ADDITIONAL REQUIREMENTS</label>
-              <textarea name="requirements" placeholder="Tell us more about your vision..." rows={4} required style={{padding:14,borderRadius:10,border:"1.5px solid #eee",fontSize:15,resize:"none"}}/>
+              <label style={{fontSize:11,fontWeight:700,color:"#666"}}>UPLOAD YOUR DESIGN PIC (OPTIONAL)</label>
+              <input 
+                name="image" 
+                type="file" 
+                accept="image/*" 
+                style={{
+                  padding:14,
+                  borderRadius:10,
+                  border:"1.5px solid #eee",
+                  fontSize:13,
+                  background:"#fafafa"
+                }}
+              />
+              <p style={{margin:0,fontSize:10,color:"#999"}}>Upload a sketch, reference photo, or design you'd like us to follow.</p>
+            </div>
+
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              <label style={{fontSize:11,fontWeight:700,color:"#666"}}>DETAILED REQUIREMENTS & SUGGESTIONS</label>
+              <textarea 
+                name="requirements" 
+                placeholder="Tell us exactly what you envision... (Colors, style, text, or any specific suggestions)" 
+                rows={4} 
+                required 
+                style={{padding:14,borderRadius:10,border:"1.5px solid #eee",fontSize:15,resize:"none"}}
+              />
             </div>
 
             <button type="submit" style={{padding:16,background:"var(--color-jade)",color:"var(--color-gold)",fontWeight:800,borderRadius:10,border:"none",fontSize:16,cursor:"pointer",marginTop:8,boxShadow:"0 10px 20px rgba(17, 42, 34, 0.2)"}}>
@@ -165,6 +190,7 @@ export default function ArtStore() {
   const [dbProducts, setDbProducts]         = useState([]);
   const [adminAuth, setAdminAuth]           = useState(false);
   const [passInput, setPassInput]           = useState("");
+  const [configurableProduct, setConfigurableProduct] = useState(null);
 
   useEffect(() => {
     const hideLoader = () => setLoading(false);
@@ -226,7 +252,13 @@ export default function ArtStore() {
         </div>
       );
     }
-    return <AdminDashboard orders={orders} setOrders={setOrders} requests={requests} setRequests={setRequests} dbProducts={dbProducts} setDbProducts={setDbProducts} setAdminAuth={setAdminAuth} setView={setView} />;
+    return <AdminDashboard 
+      orders={orders} setOrders={setOrders} 
+      requests={requests} setRequests={setRequests} 
+      dbProducts={dbProducts} setDbProducts={setDbProducts} 
+      setAdminAuth={setAdminAuth} setView={setView}
+      initialProducts={initialProducts} 
+    />;
   }
 
   return (
@@ -267,7 +299,14 @@ export default function ArtStore() {
         {visible.length > 0 ? (
           <div className="shop-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(320px,1fr))",gap:32}}>
             {visible.map(p=>(
-              <ProductCard key={p.id || p._id} product={p} addToCart={addToCart} setInquire={setInquire} />
+              <ProductCard 
+                key={p.id || p._id} 
+                product={p} 
+                addToCart={(item) => {
+                  setConfigurableProduct(item);
+                }} 
+                setInquire={setInquire} 
+              />
             ))}
           </div>
         ) : (
@@ -292,8 +331,6 @@ export default function ArtStore() {
 
       {cartOpen && <CartDrawer cart={cart} setCartOpen={setCartOpen} removeFromCart={removeFromCart} setCheckoutOpen={setCheckoutOpen} total={total} advance={advance} />}
 
-      {/* Inquire & Custom Modal Logic stays in App.jsx for simplicity or can be moved later */}
-      {/* (I'll keep the modal code here but it is much cleaner now) */}
       {checkoutOpen && (
         <div style={{position:"fixed",inset:0,zIndex:110,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
           <div onClick={()=>setCheckoutOpen(false)} style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.7)",backdropFilter:"blur(8px)"}}/>
@@ -348,7 +385,7 @@ export default function ArtStore() {
       )}
 
       {customModalOpen && (
-        <CustomOrderModal onClose={() => setCustomModalOpen(true)} setCustomModalOpen={setCustomModalOpen} />
+        <CustomOrderModal setCustomModalOpen={setCustomModalOpen} />
       )}
 
       {inquire && (
@@ -397,6 +434,14 @@ export default function ArtStore() {
              </form>
           </div>
         </div>
+      )}
+
+      {configurableProduct && (
+        <ConfigurableProductModal 
+          product={configurableProduct} 
+          addToCart={addToCart} 
+          onClose={() => setConfigurableProduct(null)} 
+        />
       )}
     </div>
   );

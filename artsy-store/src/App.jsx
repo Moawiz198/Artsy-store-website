@@ -378,7 +378,7 @@ export default function ArtStore() {
               } catch (e) { alert("Error connecting to server. Please check if the backend is running."); }
             }} style={{display:"flex",flexDirection:"column",gap:16}}>
               <input name="customerName" type="text" placeholder="Full Name" required onInput={(e) => e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '')} style={{padding:"14px",borderRadius:10,border:"1.5px solid #eee"}}/>
-              <input name="whatsapp" type="text" placeholder="Instagram Username or Contact Number" required style={{padding:"14px",borderRadius:10,border:"1.5px solid #eee"}}/>
+              <input name="whatsapp" type="text" placeholder="Contact Number (WhatsApp)" required style={{padding:"14px",borderRadius:10,border:"1.5px solid #eee"}}/>
               <textarea name="address" placeholder="Shipping Address (Full Details)" rows={3} required style={{padding:"14px",borderRadius:10,border:"1.5px solid #eee"}}/>
               <label style={{display:"flex",gap:12,alignItems:"center",cursor:"pointer"}}><input type="checkbox" required /> I have paid the 70% advance.</label>
               <button type="submit" style={{width:"100%",padding:"15px",borderRadius:8,background:"var(--color-jade)",color:"var(--color-gold)",fontWeight:700}}>CONFIRM ORDER</button>

@@ -207,6 +207,44 @@ app.patch('/api/orders/:id', async (req, res) => {
   }
 });
 
+// Update Custom Request status
+app.patch('/api/custom-requests/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const localReq = updateLocal('requests.json', id, req.body);
+    if (localReq) return res.json(localReq);
+
+    if (mongoose.connection.readyState !== 1) return res.status(503).json({ error: "DB Offline" });
+
+    const updated = await CustomRequest.findByIdAndUpdate(id, req.body, { new: true });
+    if (!updated) return res.status(404).json({ error: "Request not found" });
+    res.json(updated);
+  } catch (err) { res.status(400).json({ error: err.message }); }
+});
+
+// Delete/Reject Custom Request
+app.delete('/api/custom-requests/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Check local JSON
+    const filePath = path.join(__dirname, 'backups', 'requests.json');
+    if (fs.existsSync(filePath)) {
+      let existing = JSON.parse(fs.readFileSync(filePath));
+      const filtered = existing.filter(item => item._id !== id);
+      if (filtered.length !== existing.length) {
+        fs.writeFileSync(filePath, JSON.stringify(filtered, null, 2));
+        return res.json({ message: "Deleted from local storage" });
+      }
+    }
+
+    if (mongoose.connection.readyState !== 1) return res.status(503).json({ error: "DB Offline" });
+    const deleted = await CustomRequest.findByIdAndDelete(id);
+    if (!deleted) return res.status(404).json({ error: "Request not found" });
+    res.json({ message: "Request rejected and deleted" });
+  } catch (err) { res.status(400).json({ error: err.message }); }
+});
+
 // 6. Products: Add New Product (with Image & optional Video)
 app.post('/api/products', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'video', maxCount: 1 }]), async (req, res) => {
   try {

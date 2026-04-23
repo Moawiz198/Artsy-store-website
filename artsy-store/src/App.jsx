@@ -75,7 +75,7 @@ function CustomOrderModal({ setCustomModalOpen }) {
             formData.set('colors', category === 'Crochet' ? formData.get('colors') : 'N/A');
 
             try {
-              const res = await fetch('${API_URL}/api/custom-request', { 
+              const res = await fetch(`${API_URL}/api/custom-request`, { 
                 method: 'POST', 
                 body: formData // No Content-Type header needed for FormData with files
               });
@@ -214,13 +214,13 @@ export default function ArtStore() {
   }, []);
 
   useEffect(() => {
-    fetch('${API_URL}/api/products').then(r => r.json()).then(setDbProducts).catch(console.error);
+    fetch(`${API_URL}/api/products`).then(r => r.json()).then(setDbProducts).catch(console.error);
   }, []);
 
   useEffect(() => {
     if (view === 'admin' && adminAuth) {
-      fetch('${API_URL}/api/orders').then(r => r.json()).then(setOrders).catch(console.error);
-      fetch('${API_URL}/api/custom-requests').then(r => r.json()).then(setRequests).catch(console.error);
+      fetch(`${API_URL}/api/orders`).then(r => r.json()).then(setOrders).catch(console.error);
+      fetch(`${API_URL}/api/custom-requests`).then(r => r.json()).then(setRequests).catch(console.error);
     }
   }, [view, adminAuth]);
 
@@ -365,7 +365,7 @@ export default function ArtStore() {
                 advanceAmount: advance
               };
               try {
-                const res = await fetch('${API_URL}/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
+                const res = await fetch(`${API_URL}/api/checkout`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
                 if(res.ok) { 
                   alert("Order Received!"); 
                   setCart([]); 

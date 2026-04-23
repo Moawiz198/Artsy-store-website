@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5055';
+
 export default function ConfigurableProductModal({ product, addToCart, onClose }) {
   const [config, setConfig] = useState(null);
   const [selectedSize, setSelectedSize] = useState("12x16");
@@ -8,7 +10,7 @@ export default function ConfigurableProductModal({ product, addToCart, onClose }
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:5055/api/settings/space-painting-config')
+    fetch(`${API_URL}/api/settings/space-painting-config`)
       .then(r => r.json())
       .then(data => {
         if (data && data.value) setConfig(data.value);
@@ -57,7 +59,7 @@ export default function ConfigurableProductModal({ product, addToCart, onClose }
         formData.append('requirements', 'Cart Item Reference');
         
         try {
-          const res = await fetch('http://localhost:5055/api/custom-request', {
+          const res = await fetch(`${API_URL}/api/custom-request`, {
             method: 'POST',
             body: formData
           });

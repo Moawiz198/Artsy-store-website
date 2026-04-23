@@ -194,24 +194,30 @@ export default function ArtStore() {
   const [passInput, setPassInput]           = useState("");
   const [configurableProduct, setConfigurableProduct] = useState(null);
 
+  const [lastOrderId, setLastOrderId] = useState(localStorage.getItem('lastOrderId'));
+  const [orderStatus, setOrderStatus] = useState(null);
+
   useEffect(() => {
     const hideLoader = () => setLoading(false);
+    const timer = setTimeout(hideLoader, 500);
     
-    // Auto-hide after 1.5 seconds anyway
-    const timer = setTimeout(hideLoader, 1500);
-    
-    // Hide immediately on user interaction
     window.addEventListener('scroll', hideLoader, { once: true });
-    window.addEventListener('mousemove', hideLoader, { once: true });
-    window.addEventListener('touchstart', hideLoader, { once: true });
-    
     return () => {
       clearTimeout(timer);
       window.removeEventListener('scroll', hideLoader);
-      window.removeEventListener('mousemove', hideLoader);
-      window.removeEventListener('touchstart', hideLoader);
     };
   }, []);
+
+  useEffect(() => {
+    if (lastOrderId) {
+      fetch(`${API_URL}/api/orders/${lastOrderId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (!data.error) setOrderStatus(data);
+        })
+        .catch(() => {});
+    }
+  }, [lastOrderId]);
 
   useEffect(() => {
     fetch(`${API_URL}/api/products`).then(r => r.json()).then(setDbProducts).catch(console.error);
@@ -343,47 +349,92 @@ export default function ArtStore() {
               <p style={{color:"var(--color-gold)",letterSpacing:4,fontSize:11,fontWeight:700,marginBottom:8}}>SECURE CHECKOUT</p>
               <h3 style={{fontFamily:"var(--font-serif)",fontSize:32,fontWeight:700,color:"var(--color-jade)",margin:0}}>Complete Your Order</h3>
             </div>
+            
             <div style={{background:"#f9f8f4",borderRadius:12,padding:20,marginBottom:28,border:"1px solid #eee"}}>
-              <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{color:"#666"}}>Total:</span><span style={{fontWeight:700,color:"var(--color-jade)"}}>Rs. {total.toLocaleString()}</span></div>
-              <div style={{display:"flex",justifyContent:"space-between",padding:"12px 0",borderTop:"1px dashed #ddd"}}><span style={{fontWeight:700}}>Advance (70%):</span><span style={{fontWeight:800,color:"#c9a84c",fontSize:20}}>Rs. {advance.toLocaleString()}</span></div>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                <span style={{color:"#666"}}>Cart Total:</span>
+                <span style={{fontWeight:700,color:"var(--color-jade)"}}>Rs. {total.toLocaleString()}</span>
+              </div>
+              <p style={{fontSize:11, color:"#999", margin:"8px 0 0", fontStyle:"italic"}}>* Note: Delivery charges are not included and will be collected separately.</p>
             </div>
+
             <div style={{background:"var(--color-jade)",color:"#fff",padding:20,borderRadius:12,marginBottom:32}}>
-              <p style={{fontSize:18,fontWeight:700,margin:0}}>JazzCash: {import.meta.env.VITE_JAZZCASH_NUMBER || "+92 300 0000000"}</p>
-              <p style={{fontSize:15,opacity:0.9,margin:0}}>Name: {import.meta.env.VITE_OWNER_NAME || "Artsy Owner"}</p>
+              <p style={{fontSize:18,fontWeight:700,margin:0}}>JazzCash: +92 303 6192198</p>
+              <p style={{fontSize:15,opacity:0.9,margin:0}}>Account Name: Muaz Sajid</p>
             </div>
+
             <form onSubmit={async (e)=>{
               e.preventDefault();
               const form = e.target;
-              if(!form.querySelector('input[type="checkbox"]').checked) return alert("Please confirm advance payment");
-              const data = new FormData(form);
-              const formData = {
-                customerName: data.get('customerName'),
-                whatsapp: data.get('whatsapp'),
-                address: data.get('address'),
-                paymentMethod: "70% Advance Paid",
-                items: cart,
-                totalAmount: total,
-                advanceAmount: advance
-              };
+              if(!form.querySelector('input[type="checkbox"]').checked) return alert("Please confirm payment");
+              
+              const formData = new FormData(form);
+              formData.append('items', JSON.stringify(cart));
+              formData.append('totalAmount', total);
+              
+              const paymentOption = formData.get('paymentOption');
+              formData.append('advanceAmount', paymentOption === 'Full' ? total : advance);
+              formData.append('paymentMethod', paymentOption === 'Full' ? "Full Payment Paid" : "70% Advance Paid");
+
               try {
-                const res = await fetch(`${API_URL}/api/checkout`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
+                const res = await fetch(`${API_URL}/api/checkout`, { method: 'POST', body: formData });
                 if(res.ok) { 
-                  alert("Order Received!"); 
+                  const result = await res.json();
+                  alert("Order Placed! Please wait up to 4 hours for payment verification."); 
+                  localStorage.setItem('lastOrderId', result.orderId);
+                  setLastOrderId(result.orderId);
                   setCart([]); 
                   setCheckoutOpen(false); 
                 } else {
                   const errData = await res.json();
                   alert(errData.error || "Failed to place order.");
                 }
-              } catch (e) { alert("Error connecting to server. Please check if the backend is running."); }
+              } catch (e) { 
+                console.error("Checkout error:", e);
+                alert("Error connecting to server. Please check if the backend is running."); 
+              }
             }} style={{display:"flex",flexDirection:"column",gap:16}}>
+              
+              <div style={{marginBottom:8}}>
+                <label style={{fontSize:13, fontWeight:700, color:"var(--color-jade)", display:"block", marginBottom:8}}>CHOOSE PAYMENT OPTION</label>
+                <div style={{display:"flex", gap:12}}>
+                  <label style={{flex:1, padding:12, border:"1px solid #ddd", borderRadius:8, display:"flex", alignItems:"center", gap:8, cursor:"pointer"}}>
+                    <input type="radio" name="paymentOption" value="70%" defaultChecked />
+                    <span style={{fontSize:13}}>70% Advance (Rs. {advance.toLocaleString()})</span>
+                  </label>
+                  <label style={{flex:1, padding:12, border:"1px solid #ddd", borderRadius:8, display:"flex", alignItems:"center", gap:8, cursor:"pointer"}}>
+                    <input type="radio" name="paymentOption" value="Full" />
+                    <span style={{fontSize:13}}>Full Payment (Rs. {total.toLocaleString()})</span>
+                  </label>
+                </div>
+              </div>
+
               <input name="customerName" type="text" placeholder="Full Name" required onInput={(e) => e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '')} style={{padding:"14px",borderRadius:10,border:"1.5px solid #eee"}}/>
               <input name="whatsapp" type="text" placeholder="Contact Number (WhatsApp)" required style={{padding:"14px",borderRadius:10,border:"1.5px solid #eee"}}/>
               <textarea name="address" placeholder="Shipping Address (Full Details)" rows={3} required style={{padding:"14px",borderRadius:10,border:"1.5px solid #eee"}}/>
-              <label style={{display:"flex",gap:12,alignItems:"center",cursor:"pointer"}}><input type="checkbox" required /> I have paid the 70% advance.</label>
+              
+              <div style={{padding:16, border:"1px dashed var(--color-gold)", borderRadius:10, background:"#fffaf0"}}>
+                <label style={{fontSize:12, fontWeight:700, color:"var(--color-jade)", display:"block", marginBottom:4}}>UPLOAD PAYMENT SCREENSHOT</label>
+                <p style={{fontSize:11, color:"#666", marginBottom:8}}>Upload the JazzCash receipt screenshot here.</p>
+                <input name="paymentScreenshot" type="file" accept="image/*" required style={{fontSize:12}} />
+              </div>
+
+              <div style={{background:"#f0f7f3", padding:12, borderRadius:8, border:"1px solid #d1e7dd"}}>
+                <p style={{margin:0, fontSize:12, color:"#0f5132", fontWeight:600}}>⚡ NOTE: It takes up to 4 hours to verify your payment. Your order will be processed after verification.</p>
+              </div>
+
+              <label style={{display:"flex",gap:12,alignItems:"center",cursor:"pointer", fontSize:13}}><input type="checkbox" required /> I have paid the amount and uploaded the screenshot.</label>
               <button type="submit" style={{width:"100%",padding:"15px",borderRadius:8,background:"var(--color-jade)",color:"var(--color-gold)",fontWeight:700}}>CONFIRM ORDER</button>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* Cookie Banner */}
+      {!localStorage.getItem('cookieAccepted') && (
+        <div id="cookieBanner" style={{position:"fixed", bottom:24, left:24, right:24, background:"#fff", padding:20, borderRadius:16, boxShadow:"0 10px 30px rgba(0,0,0,0.15)", zIndex:5000, display:"flex", justifyContent:"space-between", alignItems:"center", gap:20, maxWidth:1000, margin:"0 auto", border:"1.5px solid var(--color-jade)"}}>
+          <div style={{fontSize:14, color:"var(--color-jade)"}}>🍪 We use cookies to improve your experience. By using our site, you agree to our use of cookies.</div>
+          <button onClick={()=>{localStorage.setItem('cookieAccepted', 'true'); document.getElementById('cookieBanner').style.display='none';}} style={{background:"var(--color-jade)", color:"#fff", border:"none", borderRadius:8, padding:"10px 24px", fontWeight:700, cursor:"pointer", whiteSpace:"nowrap"}}>Accept</button>
         </div>
       )}
 

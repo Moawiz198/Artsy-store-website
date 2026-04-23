@@ -28,9 +28,9 @@ export default function AdminDashboard({
           </div>
           <div style={{display:"flex",gap:12}}>
             <button onClick={()=>{
-              fetch('${API_URL}/api/orders').then(r=>r.json()).then(setOrders);
-              fetch('${API_URL}/api/custom-requests').then(r=>r.json()).then(setRequests);
-              fetch('${API_URL}/api/products').then(r=>r.json()).then(setDbProducts);
+              fetch(`${API_URL}/api/orders`).then(r=>r.json()).then(setOrders);
+              fetch(`${API_URL}/api/custom-requests`).then(r=>r.json()).then(setRequests);
+              fetch(`${API_URL}/api/products`).then(r=>r.json()).then(setDbProducts);
               alert("Data Refreshed!");
             }} style={{padding:"12px 20px",borderRadius:10,background:"#fff",border:"1.5px solid #e5e7eb",fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",gap:8}}>
               🔄 Refresh

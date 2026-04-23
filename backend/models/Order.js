@@ -12,9 +12,10 @@ const orderSchema = new mongoose.Schema({
   }],
   totalAmount: { type: Number, required: true },
   advanceAmount: { type: Number, required: true },
-  isPaid: { type: Boolean, default: false },
-  isFullPaid: { type: Boolean, default: false },
-  status: { type: String, default: 'Pending Payment' },
+   isPaid: { type: Boolean, default: false },
+   isFullPaid: { type: Boolean, default: false },
+   paymentScreenshot: { type: String }, // Store Cloudinary URL
+   status: { type: String, default: 'Pending Payment' },
   createdAt: { type: Date, default: Date.now }
 });
 

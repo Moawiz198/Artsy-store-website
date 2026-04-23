@@ -14,7 +14,7 @@ const Product = require('./models/Product');
 const Settings = require('./models/Settings');
 
 const app = express();
-const PORT = 5055;
+const PORT = process.env.PORT || 5055;
 
 // Middleware
 app.use(cors());
@@ -133,15 +133,23 @@ app.post('/api/custom-request', upload.single('image'), async (req, res) => {
   }
 });
 
-// 2. Submit Checkout Order
-app.post('/api/checkout', async (req, res) => {
+// 2. Submit Checkout Order (with Payment Screenshot)
+app.post('/api/checkout', upload.single('paymentScreenshot'), async (req, res) => {
   try {
+    const data = req.body;
+    if (req.file) data.paymentScreenshot = req.file.path; // Cloudinary URL
+
+    // Parse items if they come as a string
+    if (typeof data.items === 'string') {
+      try { data.items = JSON.parse(data.items); } catch(e) {}
+    }
+
     if (mongoose.connection.readyState !== 1) {
       console.warn("⚠️ DB Offline. Saving order to local JSON.");
-      saveToLocal('orders.json', req.body);
+      saveToLocal('orders.json', data);
       return res.status(201).json({ message: 'Order placed locally (Database Offline)' });
     }
-    const newOrder = new Order(req.body);
+    const newOrder = new Order(data);
     await newOrder.save();
     console.log("✅ New Order Received from:", req.body.customerName);
     res.status(201).json({ message: 'Order placed successfully!', orderId: newOrder._id });
@@ -163,6 +171,22 @@ app.get('/api/orders', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// Get Single Order Status (for Customers)
+app.get('/api/orders/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Check local
+    const localOrders = getFromLocal('orders.json');
+    const local = localOrders.find(o => o._id === id);
+    if (local) return res.json(local);
+
+    if (mongoose.connection.readyState !== 1) return res.status(503).json({ error: "DB Offline" });
+    const order = await Order.findById(id);
+    if (!order) return res.status(404).json({ error: "Order not found" });
+    res.json(order);
+  } catch (err) { res.status(400).json({ error: "Invalid Order ID" }); }
 });
 
 // 4. Admin: Get all Custom Requests

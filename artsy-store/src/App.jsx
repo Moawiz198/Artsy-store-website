@@ -11,6 +11,7 @@ import CartDrawer from './components/CartDrawer';
 import Mission from './components/Mission';
 import Contact from './components/Contact';
 import ConfigurableProductModal from './components/ConfigurableProductModal';
+import CookieBanner from './components/CookieBanner';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5055';
 
@@ -272,7 +273,28 @@ export default function ArtStore() {
 
   return (
     <div style={{fontFamily:"var(--font-sans)",background:"var(--color-cream)",minHeight:"100vh"}}>
+      <CookieBanner />
       
+      {/* Track Order Status for returning customers */}
+      {orderStatus && localStorage.getItem('cookieAccepted') === 'true' && (
+        <div style={{background:"var(--color-gold)", padding:"14px 24px", textAlign:"center", fontSize:14, fontWeight:700, color:"var(--color-jade)", borderBottom:"2px solid rgba(0,0,0,0.05)", position:"relative", zIndex:1001}}>
+          ✨ Welcome Back! Your Order: 
+          <span style={{
+            marginLeft: 8,
+            padding: "4px 12px",
+            background: "var(--color-jade)",
+            color: "var(--color-gold)",
+            borderRadius: 6,
+            textTransform: "uppercase",
+            fontSize: 12,
+            letterSpacing: 1
+          }}>
+            {orderStatus.status || (orderStatus.isPaid ? 'Payment Verified' : 'Pending Verification')}
+          </span> 
+          <button onClick={()=>{setOrderStatus(null); localStorage.removeItem('lastOrderId');}} style={{marginLeft:20, background:"none", border:"none", cursor:"pointer", textDecoration:"underline", fontSize:11, color:"rgba(17, 42, 34, 0.6)"}}>Clear Tracking</button>
+        </div>
+      )}
+
       {loading && (
         <div className="preloader-overlay">
           <div className="hanging-container">

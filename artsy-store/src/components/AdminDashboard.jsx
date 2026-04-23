@@ -85,14 +85,14 @@ export default function AdminDashboard({
                         <button 
                           onClick={async ()=>{
                             try {
-                              const res = await fetch('${API_URL}/api/orders/'+o._id, {
+                              const res = await fetch(`${API_URL}/api/orders/${o._id}`, {
                                 method: 'PATCH',
                                 headers: {'Content-Type':'application/json'},
                                 body: JSON.stringify({isPaid: !o.isPaid})
                               });
                               if(res.ok) {
                                 alert("Advance status updated!");
-                                fetch('${API_URL}/api/orders').then(r=>r.json()).then(setOrders);
+                                fetch(`${API_URL}/api/orders`).then(r=>r.json()).then(setOrders);
                               }
                             } catch(e) { alert("Server error"); }
                           }}
@@ -102,14 +102,14 @@ export default function AdminDashboard({
                         <button 
                           onClick={async ()=>{
                             try {
-                              const res = await fetch('${API_URL}/api/orders/'+o._id, {
+                              const res = await fetch(`${API_URL}/api/orders/${o._id}`, {
                                 method: 'PATCH',
                                 headers: {'Content-Type':'application/json'},
                                 body: JSON.stringify({isFullPaid: !o.isFullPaid})
                               });
                               if(res.ok) {
                                 alert("Full payment status updated!");
-                                fetch('${API_URL}/api/orders').then(r=>r.json()).then(setOrders);
+                                fetch(`${API_URL}/api/orders`).then(r=>r.json()).then(setOrders);
                               }
                             } catch(e) { alert("Server error"); }
                           }}
@@ -135,11 +135,11 @@ export default function AdminDashboard({
             e.preventDefault();
             const formData = new FormData(e.target);
             try {
-              const res = await fetch('${API_URL}/api/products', { method: 'POST', body: formData });
+              const res = await fetch(`${API_URL}/api/products`, { method: 'POST', body: formData });
               if(res.ok) { 
                 alert("Product Added Successfully!"); 
                 e.target.reset(); 
-                fetch('${API_URL}/api/products').then(r=>r.json()).then(setDbProducts);
+                fetch(`${API_URL}/api/products`).then(r=>r.json()).then(setDbProducts);
               } else {
                 const err = await res.json();
                 alert(err.error || "Failed to add product");

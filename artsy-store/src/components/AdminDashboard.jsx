@@ -347,15 +347,15 @@ export default function AdminDashboard({
       </div>
 
       {editingProduct && (
-        <div style={{position:"fixed",inset:0,zIndex:150,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+        <div style={{position:"fixed",inset:0,zIndex:3000,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
           <div onClick={()=>setEditingProduct(null)} style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.7)",backdropFilter:"blur(8px)"}}/>
           <div style={{position:"relative",background:"#fff",borderRadius:16,padding:32,maxWidth:500,width:"100%",maxHeight:"90vh",overflowY:"auto"}}>
             <h3 style={{marginTop:0}}>Edit Product: {editingProduct.name}</h3>
             <form onSubmit={async (e)=>{
               e.preventDefault();
               const formData = new FormData(e.target);
-              const res = await fetch('http://localhost:5055/api/products/'+editingProduct._id, { method: 'PATCH', body: formData });
-              if(res.ok) { setEditingProduct(null); fetch('http://localhost:5055/api/products').then(r=>r.json()).then(setDbProducts); }
+              const res = await fetch(`${API_URL}/api/products/${editingProduct._id}`, { method: 'PATCH', body: formData });
+              if(res.ok) { setEditingProduct(null); fetch(`${API_URL}/api/products`).then(r=>r.json()).then(setDbProducts); }
             }} style={{display:"flex",flexDirection:"column",gap:16}}>
               <input name="name" defaultValue={editingProduct.name} placeholder="Name" required style={{padding:10,borderRadius:8,border:"1px solid #eee"}}/>
               <input name="price" type="number" defaultValue={editingProduct.price} placeholder="Price" required style={{padding:10,borderRadius:8,border:"1px solid #eee"}}/>
@@ -404,7 +404,7 @@ export default function AdminDashboard({
         </div>
       )}
       {slipData && (
-        <div style={{position:"fixed",inset:0,zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+        <div style={{position:"fixed",inset:0,zIndex:3000,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
           <div onClick={()=>setSlipData(null)} style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.8)",backdropFilter:"blur(12px)"}}/>
           <div style={{position:"relative",background:"#fff",borderRadius:24,padding:0,maxWidth:450,width:"100%",boxShadow:"0 25px 50px -12px rgba(0,0,0,0.5)",overflow:"hidden"}}>
             {/* Slip Header */}
@@ -417,7 +417,8 @@ export default function AdminDashboard({
               <div style={{display:"flex",justifyContent:"space-between",marginBottom:24,borderBottom:"1px solid #eee",paddingBottom:16}}>
                 <div>
                   <div style={{fontSize:10,color:"#999",fontWeight:700}}>CUSTOMER</div>
-                  <div style={{fontWeight:800,fontSize:18,color:"#1a1a1a"}}>{slipData.customerName}</div>
+                  <div style={{fontWeight:800,fontSize:18,color:"#1a1a1a",marginBottom:8}}>{slipData.customerName}</div>
+                  <div style={{fontSize:10,color:"#999",fontWeight:700}}>CONTACT INFO</div>
                   <div style={{fontSize:12,color:"#666"}}>{slipData.whatsapp}</div>
                 </div>
                 <div style={{textAlign:"right"}}>

@@ -68,7 +68,7 @@ export default function AdminDashboard({
               </thead>
               <tbody>
                 {Array.isArray(orders) && orders.length > 0 ? orders.map(o=>(
-                  <tr key={o._id} style={{borderBottom:"1px solid #f3f4f6"}}>
+                   <tr key={o._id} style={{borderBottom:"1px solid #f3f4f6"}}>
                     <td style={{padding:"16px 24px"}}>
                       <div style={{fontWeight:600}}>{o.customerName}</div>
                       <div style={{fontSize:12,color:"#6b7280"}}>{o.whatsapp}</div>
@@ -77,8 +77,20 @@ export default function AdminDashboard({
                       {Array.isArray(o.items) ? o.items.map(i=>i.name).join(', ') : 'No items'}
                     </td>
                     <td style={{padding:"16px 24px"}}>
-                      <div>Rs. {o.totalAmount}</div>
-                      <div style={{color:"var(--color-gold)",fontWeight:700}}>Adv: Rs. {o.advanceAmount}</div>
+                      <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                        <div>Rs. {o.totalAmount}</div>
+                        <div style={{color:"var(--color-gold)",fontWeight:700,fontSize:12}}>Adv: Rs. {o.advanceAmount}</div>
+                        {o.paymentScreenshot ? (
+                          <button 
+                            onClick={()=>window.open(o.paymentScreenshot, '_blank')}
+                            style={{padding:"4px 8px",borderRadius:4,background:"#eff6ff",color:"#2563eb",border:"1px solid #dbeafe",fontSize:10,fontWeight:700,cursor:"pointer",marginTop:4}}
+                          >
+                            🖼️ VIEW RECEIPT
+                          </button>
+                        ) : (
+                          <span style={{fontSize:9,color:"#9ca3af"}}>No Slip Uploaded</span>
+                        )}
+                      </div>
                     </td>
                     <td style={{padding:"16px 24px"}}>
                       <div style={{display:"flex",flexDirection:"column",gap:8}}>
@@ -118,7 +130,9 @@ export default function AdminDashboard({
                         </button>
                       </div>
                     </td>
-                    <td style={{padding:"16px 24px",fontSize:12,color:"#6b7280"}}>{o.createdAt ? new Date(o.createdAt).toLocaleDateString() : 'N/A'}</td>
+                    <td style={{padding:"16px 24px",fontSize:11,color:"#6b7280"}}>
+                      {o.createdAt ? new Date(o.createdAt).toLocaleString('en-PK', { dateStyle:'short', timeStyle:'short' }) : 'N/A'}
+                    </td>
                   </tr>
                 )) : (
                   <tr><td colSpan="5" style={{padding:40,textAlign:"center",color:"#9ca3af"}}>No orders found.</td></tr>

@@ -30,7 +30,7 @@ function CustomOrderModal({ setCustomModalOpen }) {
   const [category, setCategory] = React.useState('Art'); // 'Art' or 'Crochet'
 
   return (
-    <div style={{position:"fixed",inset:0,zIndex:110,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+    <div style={{position:"fixed",inset:0,zIndex:3000,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <div onClick={()=>setCustomModalOpen(false)} style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.7)",backdropFilter:"blur(8px)"}}/>
       <div className="modal-container" style={{position:"relative",background:"#fff",borderRadius:20,padding:40,maxWidth:600,width:"100%",boxShadow:"0 32px 64px rgba(0,0,0,0.3)",maxHeight:"90vh",overflowY:"auto"}}>
           <button onClick={()=>setCustomModalOpen(false)} style={{position:"absolute",top:20,right:20,background:"none",border:"none",fontSize:24,cursor:"pointer"}}>✕</button>
@@ -334,7 +334,7 @@ export default function ArtStore() {
       {cartOpen && <CartDrawer cart={cart} setCartOpen={setCartOpen} removeFromCart={removeFromCart} setCheckoutOpen={setCheckoutOpen} total={total} advance={advance} />}
 
       {checkoutOpen && (
-        <div style={{position:"fixed",inset:0,zIndex:110,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+        <div style={{position:"fixed",inset:0,zIndex:3000,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
           <div onClick={()=>setCheckoutOpen(false)} style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.7)",backdropFilter:"blur(8px)"}}/>
           <div className="modal-container" style={{position:"relative",background:"#fff",borderRadius:20,padding:40,maxWidth:600,width:"100%",boxShadow:"0 32px 64px rgba(0,0,0,0.3)",maxHeight:"90vh",overflowY:"auto"}}>
             <button onClick={()=>setCheckoutOpen(false)} style={{position:"absolute",top:20,right:20,background:"none",border:"none",fontSize:24,cursor:"pointer",color:"#6b7280"}}>✕</button>
@@ -391,7 +391,7 @@ export default function ArtStore() {
       )}
 
       {inquire && (
-        <div style={{position:"fixed",inset:0,zIndex:110,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+        <div style={{position:"fixed",inset:0,zIndex:3000,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
           <div onClick={()=>setInquire(null)} style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.7)",backdropFilter:"blur(8px)"}}/>
           <div className="modal-container" style={{position:"relative",background:"#fff",borderRadius:20,padding:40,maxWidth:600,width:"100%",boxShadow:"0 32px 64px rgba(0,0,0,0.3)"}}>
              <button onClick={()=>setInquire(null)} style={{position:"absolute",top:20,right:20,background:"none",border:"none",fontSize:24,cursor:"pointer"}}>✕</button>

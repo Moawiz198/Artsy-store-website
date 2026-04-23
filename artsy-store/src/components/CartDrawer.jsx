@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function CartDrawer({ cart, setCartOpen, removeFromCart, setCheckoutOpen, total, advance }) {
   return (
-    <div style={{position:"fixed",inset:0,zIndex:100}}>
+    <div style={{position:"fixed",inset:0,zIndex:2500}}>
       <div onClick={()=>setCartOpen(false)} style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.6)",backdropFilter:"blur(4px)"}}/>
       <div style={{position:"absolute",right:0,top:0,bottom:0,width:420,maxWidth:"100vw",background:"#fff",display:"flex",flexDirection:"column",boxShadow:"-8px 0 48px rgba(0,0,0,0.2)"}}>
         <div style={{background:"var(--color-jade)",padding:"20px 24px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>

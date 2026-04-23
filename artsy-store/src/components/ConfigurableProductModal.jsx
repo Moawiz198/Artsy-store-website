@@ -88,7 +88,7 @@ export default function ConfigurableProductModal({ product, addToCart, onClose }
   };
 
   return (
-    <div style={{position:"fixed",inset:0,zIndex:120,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+    <div style={{position:"fixed",inset:0,zIndex:2800,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <div onClick={onClose} style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.8)",backdropFilter:"blur(10px)"}}/>
       <div className="modal-container responsive-modal" style={{
         position:"relative",

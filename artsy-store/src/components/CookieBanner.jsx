@@ -37,37 +37,45 @@ export default function CookieBanner() {
         bottom: 30,
         left: 30,
         zIndex: 10000,
-        background: "rgba(255, 255, 255, 0.8)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
+        background: "rgba(255, 255, 255, 0.85)",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
         padding: isHovered ? "24px 32px" : "15px",
         borderRadius: isHovered ? 24 : 50,
-        boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
-        border: "1.5px solid rgba(17, 42, 34, 0.1)",
+        boxShadow: isHovered ? "0 25px 50px rgba(0,0,0,0.2)" : "0 10px 25px rgba(16, 185, 129, 0.2)",
+        border: "1.5px solid rgba(16, 185, 129, 0.2)",
         maxWidth: isHovered ? 500 : 60,
-        transition: "all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)",
+        transition: "all 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
         gap: 16,
         cursor: isHovered ? "default" : "pointer",
-        animation: "float 4s ease-in-out infinite"
+        animation: "entrance 1s cubic-bezier(0.175, 0.885, 0.32, 1.275), float 4s ease-in-out infinite"
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 15, minWidth: isHovered ? "auto" : 30 }}>
-        <span style={{ 
-          fontSize: isHovered ? 32 : 24, 
-          transition: "0.4s",
-          transform: isHovered ? "rotate(10deg)" : "rotate(0deg)"
+        <div style={{ 
+          position: "relative",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
         }}>
-          🍪
-        </span>
+          {!isHovered && <div className="cookie-pulse"></div>}
+          <span style={{ 
+            fontSize: isHovered ? 32 : 24, 
+            transition: "0.4s",
+            transform: isHovered ? "rotate(15deg) scale(1.1)" : "rotate(0deg)"
+          }}>
+            🍪
+          </span>
+        </div>
         {isHovered && (
-          <div style={{ animation: "fadeIn 0.4s ease-out forwards" }}>
-            <h4 style={{ margin: "0 0 4px", color: "var(--color-jade)", fontFamily: "var(--font-serif)", fontSize: 18 }}>Cookie Settings</h4>
+          <div style={{ animation: "slideInText 0.5s ease-out forwards" }}>
+            <h4 style={{ margin: "0 0 4px", color: "var(--color-jade)", fontFamily: "var(--font-serif)", fontSize: 18, letterSpacing: 0.5 }}>Cookie Settings</h4>
             <p style={{ margin: 0, fontSize: 12, color: "#4b5563", lineHeight: 1.5 }}>
               We use cookies to save your cart and track your orders. 
-              <strong> If declined, history will be lost.</strong>
+              <strong> Note: History is lost if declined.</strong>
             </p>
           </div>
         )}
@@ -78,17 +86,17 @@ export default function CookieBanner() {
           display: "flex", 
           gap: 10, 
           justifyContent: "flex-end",
-          animation: "fadeIn 0.6s ease-out forwards"
+          animation: "fadeIn 0.8s ease-out forwards"
         }}>
           <button 
             onClick={handleDecline} 
-            style={{ background: "transparent", color: "#666", border: "1px solid #eee", borderRadius: 10, padding: "8px 16px", fontWeight: 600, cursor: "pointer", fontSize: 11 }}
+            style={{ background: "transparent", color: "#666", border: "1px solid #ddd", borderRadius: 10, padding: "8px 16px", fontWeight: 600, cursor: "pointer", fontSize: 11, transition: "0.2s" }}
           >
             Decline
           </button>
           <button 
             onClick={handleAccept} 
-            style={{ background: "var(--color-jade)", color: "var(--color-gold)", border: "none", borderRadius: 10, padding: "8px 20px", fontWeight: 700, cursor: "pointer", fontSize: 12 }}
+            style={{ background: "var(--color-jade)", color: "var(--color-gold)", border: "none", borderRadius: 10, padding: "8px 20px", fontWeight: 700, cursor: "pointer", fontSize: 12, boxShadow: "0 4px 12px rgba(16, 185, 129, 0.3)" }}
           >
             Accept Cookies
           </button>
@@ -96,14 +104,34 @@ export default function CookieBanner() {
       )}
 
       <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateX(-10px); }
+        @keyframes entrance {
+          0% { transform: translateX(-150px) rotate(-45deg); opacity: 0; }
+          100% { transform: translateX(0) rotate(0deg); opacity: 1; }
+        }
+        @keyframes slideInText {
+          from { opacity: 0; transform: translateX(-20px); }
           to { opacity: 1; transform: translateX(0); }
         }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
         @keyframes float {
-          0% { transform: translateY(0px); }
-          50% { transform: translateY(-8px); }
-          100% { transform: translateY(0px); }
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+        .cookie-pulse {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          background: var(--color-jade);
+          border-radius: 50%;
+          opacity: 0.5;
+          animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+        }
+        @keyframes pulse-ring {
+          0% { transform: scale(0.8); opacity: 0.5; }
+          80%, 100% { transform: scale(2); opacity: 0; }
         }
       `}</style>
     </div>

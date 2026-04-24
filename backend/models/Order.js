@@ -29,11 +29,19 @@ const Order = sequelize.define('Order', {
   },
   totalAmount: {
     type: DataTypes.DECIMAL(10, 2),
-    allowNull: false
+    allowNull: false,
+    get() {
+      const value = this.getDataValue('totalAmount');
+      return value === null ? null : parseFloat(value);
+    }
   },
   advanceAmount: {
     type: DataTypes.DECIMAL(10, 2),
-    allowNull: false
+    allowNull: false,
+    get() {
+      const value = this.getDataValue('advanceAmount');
+      return value === null ? null : parseFloat(value);
+    }
   },
   isPaid: {
     type: DataTypes.BOOLEAN,

@@ -8,7 +8,12 @@ const sequelize = new Sequelize(
   {
     host: process.env.MYSQL_HOST || 'localhost',
     dialect: 'mysql',
-    logging: false, // Set to console.log to see SQL queries
+    logging: false,
+    dialectOptions: {
+      ssl: {
+        rejectUnauthorized: true,
+      },
+    },
   }
 );
 

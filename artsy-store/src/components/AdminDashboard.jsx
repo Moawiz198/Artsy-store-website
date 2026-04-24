@@ -68,7 +68,7 @@ export default function AdminDashboard({
               </thead>
               <tbody>
                 {Array.isArray(orders) && orders.length > 0 ? orders.map(o=>(
-                   <tr key={o._id} style={{borderBottom:"1px solid #f3f4f6"}}>
+                   <tr key={o.id} style={{borderBottom:"1px solid #f3f4f6"}}>
                     <td style={{padding:"16px 24px"}}>
                       <div style={{fontWeight:600}}>{o.customerName}</div>
                       <div style={{fontSize:12,color:"#6b7280"}}>{o.whatsapp}</div>
@@ -97,7 +97,7 @@ export default function AdminDashboard({
                         <button 
                           onClick={async ()=>{
                             try {
-                              const res = await fetch(`${API_URL}/api/orders/${o._id}`, {
+                              const res = await fetch(`${API_URL}/api/orders/${o.id}`, {
                                 method: 'PATCH',
                                 headers: {'Content-Type':'application/json'},
                                 body: JSON.stringify({isPaid: !o.isPaid})
@@ -114,7 +114,7 @@ export default function AdminDashboard({
                         <button 
                           onClick={async ()=>{
                             try {
-                              const res = await fetch(`${API_URL}/api/orders/${o._id}`, {
+                              const res = await fetch(`${API_URL}/api/orders/${o.id}`, {
                                 method: 'PATCH',
                                 headers: {'Content-Type':'application/json'},
                                 body: JSON.stringify({isFullPaid: !o.isFullPaid})
@@ -248,7 +248,7 @@ export default function AdminDashboard({
               </thead>
               <tbody>
                 {Array.isArray(dbProducts) && dbProducts.map(p=>(
-                  <tr key={p._id} style={{borderBottom:"1px solid #f3f4f6"}}>
+                  <tr key={p.id} style={{borderBottom:"1px solid #f3f4f6"}}>
                     <td style={{padding:"16px 24px",display:"flex",alignItems:"center",gap:12}}>
                       <img src={p.image} style={{width:40,height:40,borderRadius:4,objectFit:"cover"}} alt={p.name} />
                       <div style={{fontWeight:600}}>{p.name}</div>
@@ -260,7 +260,7 @@ export default function AdminDashboard({
                         const newPrice = prompt("Update Price for " + p.name, p.price);
                         if(newPrice) {
                           try {
-                            const res = await fetch(`${API_URL}/api/products/${p._id}`, {
+                            const res = await fetch(`${API_URL}/api/products/${p.id}`, {
                               method: 'PATCH',
                               headers: {'Content-Type':'application/json'},
                               body: JSON.stringify({ price: Number(newPrice) })
@@ -274,7 +274,7 @@ export default function AdminDashboard({
                       
                       <button onClick={async ()=>{
                         if(window.confirm("Delete?")) {
-                          await fetch(`${API_URL}/api/products/${p._id}`, { method: 'DELETE' });
+                          await fetch(`${API_URL}/api/products/${p.id}`, { method: 'DELETE' });
                           fetch(`${API_URL}/api/products`).then(r=>r.json()).then(setDbProducts);
                         }
                       }} style={{padding:"6px 10px",borderRadius:6,background:"#fee2e2",color:"#ef4444",border:"none",fontSize:11,fontWeight:700,cursor:"pointer"}}>🗑️</button>
@@ -301,7 +301,7 @@ export default function AdminDashboard({
               </thead>
               <tbody>
                 {Array.isArray(requests) && requests.map(r=>(
-                  <tr key={r._id} style={{borderBottom:"1px solid #f3f4f6"}}>
+                  <tr key={r.id} style={{borderBottom:"1px solid #f3f4f6"}}>
                     <td style={{padding:"16px 24px"}}>
                       <div style={{fontWeight:600}}>{r.name}</div>
                       <div style={{fontSize:12,color:"#2563eb"}}>WA: {r.whatsapp}</div>
@@ -322,11 +322,11 @@ export default function AdminDashboard({
                       <div style={{display:"flex",flexDirection:"column",gap:8}}>
                         <div style={{display:"flex",gap:4}}>
                           <button onClick={async ()=>{
-                            await fetch(`${API_URL}/api/custom-requests/${r._id}`, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ status: 'Accepted' }) });
+                            await fetch(`${API_URL}/api/custom-requests/${r.id}`, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ status: 'Accepted' }) });
                             fetch(`${API_URL}/api/custom-requests`).then(r=>r.json()).then(setRequests);
                           }} style={{flex:1,padding:6,borderRadius:4,background:"#10b981",color:"#fff",border:"none",fontSize:10}}>Accept</button>
                           <button onClick={async ()=>{
-                            await fetch(`${API_URL}/api/custom-requests/${r._id}`, { method: 'DELETE' });
+                            await fetch(`${API_URL}/api/custom-requests/${r.id}`, { method: 'DELETE' });
                             fetch(`${API_URL}/api/custom-requests`).then(r=>r.json()).then(setRequests);
                           }} style={{flex:1,padding:6,borderRadius:4,background:"#ef4444",color:"#fff",border:"none",fontSize:10}}>Reject</button>
                         </div>
@@ -368,7 +368,7 @@ export default function AdminDashboard({
             <form onSubmit={async (e)=>{
               e.preventDefault();
               const formData = new FormData(e.target);
-              const res = await fetch(`${API_URL}/api/products/${editingProduct._id}`, { method: 'PATCH', body: formData });
+              const res = await fetch(`${API_URL}/api/products/${editingProduct.id}`, { method: 'PATCH', body: formData });
               if(res.ok) { setEditingProduct(null); fetch(`${API_URL}/api/products`).then(r=>r.json()).then(setDbProducts); }
             }} style={{display:"flex",flexDirection:"column",gap:16}}>
               <input name="name" defaultValue={editingProduct.name} placeholder="Name" required style={{padding:10,borderRadius:8,border:"1px solid #eee"}}/>

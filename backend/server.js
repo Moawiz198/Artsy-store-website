@@ -1,5 +1,4 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
@@ -8,6 +7,7 @@ const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 require('dotenv').config();
 
+const { connectDB, sequelize } = require('./db');
 const CustomRequest = require('./models/CustomRequest');
 const Order = require('./models/Order');
 const Product = require('./models/Product');
@@ -39,7 +39,7 @@ const storage = new CloudinaryStorage({
   params: async (req, file) => {
     return {
       folder: 'artsy-store',
-      resource_type: 'auto', // Automatically detect image or video
+      resource_type: 'auto',
       public_id: Date.now() + '-' + file.originalname.split('.')[0]
     };
   },
@@ -47,35 +47,8 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage });
 
-// MongoDB Connection with Enhanced Error Handling
-const MONGODB_URI = process.env.MONGODB_URI;
-
-const connectWithRetry = () => {
-  console.log('📡 Attempting to connect to MongoDB Atlas...');
-  mongoose.connect(MONGODB_URI, {
-    serverSelectionTimeoutMS: 5000, // Wait 5s before timing out
-    connectTimeoutMS: 10000,       // Connection attempt timeout
-  })
-  .then(() => {
-    console.log('✅ MongoDB Connected successfully');
-  })
-  .catch(err => {
-    console.error('❌ MongoDB Connection Failed:', err.message);
-    
-    if (err.message.includes('querySrv ETIMEOUT')) {
-      console.warn('⚠️ DETECTED: DNS Timeout (SRV Record failure).');
-      console.warn('CAUSE: Your network (Hostel/Uni WiFi) might be blocking MongoDB SRV records.');
-      console.warn('FIX: Try using a VPN or use the "Standard Connection String" (mongodb:// instead of mongodb+srv://) in your .env file.');
-    } else if (err.message.includes('Could not connect to any servers in your MongoDB Atlas cluster')) {
-      console.warn('⚠️ DETECTED: IP Whitelist Block.');
-      console.warn('FIX: Add "0.0.0.0/0" to your Network Access in MongoDB Atlas dashboard.');
-    }
-    
-    console.log('🔄 Fallback: Backend is running in OFFLINE mode (using local JSON storage).');
-  });
-};
-
-connectWithRetry();
+// MySQL Connection
+connectDB();
 
 // ── HELPER: Save to JSON Fallback ──
 const saveToLocal = (filename, data) => {
@@ -84,7 +57,7 @@ const saveToLocal = (filename, data) => {
   if (fs.existsSync(filePath)) {
     try { existing = JSON.parse(fs.readFileSync(filePath)); } catch(e) { existing = []; }
   }
-  existing.push({ ...data, _id: Date.now().toString(), createdAt: new Date(), isLocal: true });
+  existing.push({ ...data, id: Date.now().toString(), createdAt: new Date(), isLocal: true });
   fs.writeFileSync(filePath, JSON.stringify(existing, null, 2));
 };
 
@@ -101,7 +74,7 @@ const updateLocal = (filename, id, data) => {
   if (fs.existsSync(filePath)) {
     try {
       let existing = JSON.parse(fs.readFileSync(filePath));
-      const index = existing.findIndex(item => item._id === id);
+      const index = existing.findIndex(item => item.id.toString() === id.toString());
       if (index !== -1) {
         existing[index] = { ...existing[index], ...data };
         fs.writeFileSync(filePath, JSON.stringify(existing, null, 2));
@@ -118,72 +91,56 @@ const updateLocal = (filename, id, data) => {
 app.post('/api/custom-request', upload.single('image'), async (req, res) => {
   try {
     const data = req.body;
-    if (req.file) data.image = req.file.path; // Cloudinary URL
+    if (req.file) data.image = req.file.path;
 
-    if (mongoose.connection.readyState !== 1) {
-      console.warn("⚠️ DB Offline. Saving custom request to local JSON.");
-      saveToLocal('requests.json', data);
-      return res.status(201).json({ message: 'Saved locally (Database Offline)' });
-    }
-    const newRequest = new CustomRequest(data);
-    await newRequest.save();
-    res.status(201).json({ message: 'Request submitted successfully!' });
+    const newRequest = await CustomRequest.create(data);
+    res.status(201).json({ message: 'Request submitted successfully!', id: newRequest.id });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error("⚠️ MySQL Error. Falling back to local JSON.");
+    saveToLocal('requests.json', req.body);
+    res.status(201).json({ message: 'Saved locally (DB Offline)' });
   }
 });
 
-// 2. Submit Checkout Order (with Payment Screenshot)
+// 2. Submit Checkout Order
 app.post('/api/checkout', upload.single('paymentScreenshot'), async (req, res) => {
   try {
     const data = req.body;
-    if (req.file) data.paymentScreenshot = req.file.path; // Cloudinary URL
+    if (req.file) data.paymentScreenshot = req.file.path;
 
-    // Parse items if they come as a string
     if (typeof data.items === 'string') {
       try { data.items = JSON.parse(data.items); } catch(e) {}
     }
 
-    if (mongoose.connection.readyState !== 1) {
-      console.warn("⚠️ DB Offline. Saving order to local JSON.");
-      saveToLocal('orders.json', data);
-      return res.status(201).json({ message: 'Order placed locally (Database Offline)' });
-    }
-    const newOrder = new Order(data);
-    await newOrder.save();
-    console.log("✅ New Order Received from:", req.body.customerName);
-    res.status(201).json({ message: 'Order placed successfully!', orderId: newOrder._id });
+    const newOrder = await Order.create(data);
+    res.status(201).json({ message: 'Order placed successfully!', orderId: newOrder.id });
   } catch (err) {
-    console.error("❌ Error placing order:", err.message);
-    res.status(400).json({ error: err.message });
+    console.error("⚠️ MySQL Error. Falling back to local JSON:", err.message);
+    saveToLocal('orders.json', req.body);
+    res.status(201).json({ message: 'Order placed locally (DB Offline)' });
   }
 });
 
 // 3. Admin: Get all Orders
 app.get('/api/orders', async (req, res) => {
   try {
-    let orders = [];
-    if (mongoose.connection.readyState === 1) {
-      orders = await Order.find().sort({ createdAt: -1 });
-    }
+    const orders = await Order.findAll({ order: [['createdAt', 'DESC']] });
     const localOrders = getFromLocal('orders.json');
     res.json([...localOrders, ...orders]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.json(getFromLocal('orders.json'));
   }
 });
 
-// Get Single Order Status (for Customers)
+// Get Single Order Status
 app.get('/api/orders/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    // Check local
     const localOrders = getFromLocal('orders.json');
-    const local = localOrders.find(o => o._id === id);
+    const local = localOrders.find(o => o.id.toString() === id.toString());
     if (local) return res.json(local);
 
-    if (mongoose.connection.readyState !== 1) return res.status(503).json({ error: "DB Offline" });
-    const order = await Order.findById(id);
+    const order = await Order.findByPk(id);
     if (!order) return res.status(404).json({ error: "Order not found" });
     res.json(order);
   } catch (err) { res.status(400).json({ error: "Invalid Order ID" }); }
@@ -192,223 +149,116 @@ app.get('/api/orders/:id', async (req, res) => {
 // 4. Admin: Get all Custom Requests
 app.get('/api/custom-requests', async (req, res) => {
   try {
-    let requests = [];
-    if (mongoose.connection.readyState === 1) {
-      requests = await CustomRequest.find().sort({ createdAt: -1 });
-    }
+    const requests = await CustomRequest.findAll({ order: [['createdAt', 'DESC']] });
     const localRequests = getFromLocal('requests.json');
     res.json([...localRequests, ...requests]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.json(getFromLocal('requests.json'));
   }
 });
 
-// Update Order (Mark as Paid)
+// Update Order
 app.patch('/api/orders/:id', async (req, res) => {
   try {
     const { id } = req.params;
-
-    // 1. Try updating local JSON first (for offline orders)
     const localOrder = updateLocal('orders.json', id, req.body);
-    if (localOrder) {
-      console.log("✅ Local Order Updated:", id);
-      return res.json(localOrder);
-    }
+    if (localOrder) return res.json(localOrder);
 
-    // 2. If not local, check database connection
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(503).json({ 
-        error: "Database Offline. Please whitelist your IP in MongoDB Atlas to update database orders." 
-      });
-    }
-
-    const order = await Order.findByIdAndUpdate(id, req.body, { new: true });
-    if (!order) return res.status(404).json({ error: "Order not found" });
-    
-    res.json(order);
+    await Order.update(req.body, { where: { id } });
+    const updated = await Order.findByPk(id);
+    res.json(updated);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-// Update Custom Request status
+// Update Custom Request
 app.patch('/api/custom-requests/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const localReq = updateLocal('requests.json', id, req.body);
     if (localReq) return res.json(localReq);
 
-    if (mongoose.connection.readyState !== 1) return res.status(503).json({ error: "DB Offline" });
-
-    const updated = await CustomRequest.findByIdAndUpdate(id, req.body, { new: true });
-    if (!updated) return res.status(404).json({ error: "Request not found" });
+    await CustomRequest.update(req.body, { where: { id } });
+    const updated = await CustomRequest.findByPk(id);
     res.json(updated);
   } catch (err) { res.status(400).json({ error: err.message }); }
 });
 
-// Delete/Reject Custom Request
+// Delete Custom Request
 app.delete('/api/custom-requests/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    
-    // Check local JSON
     const filePath = path.join(__dirname, 'backups', 'requests.json');
     if (fs.existsSync(filePath)) {
       let existing = JSON.parse(fs.readFileSync(filePath));
-      const filtered = existing.filter(item => item._id !== id);
+      const filtered = existing.filter(item => item.id.toString() !== id.toString());
       if (filtered.length !== existing.length) {
         fs.writeFileSync(filePath, JSON.stringify(filtered, null, 2));
         return res.json({ message: "Deleted from local storage" });
       }
     }
 
-    if (mongoose.connection.readyState !== 1) return res.status(503).json({ error: "DB Offline" });
-    const deleted = await CustomRequest.findByIdAndDelete(id);
-    if (!deleted) return res.status(404).json({ error: "Request not found" });
+    await CustomRequest.destroy({ where: { id } });
     res.json({ message: "Request rejected and deleted" });
   } catch (err) { res.status(400).json({ error: err.message }); }
 });
 
-// 6. Products: Add New Product (with Image & optional Video)
+// 6. Products
 app.post('/api/products', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'video', maxCount: 1 }]), async (req, res) => {
   try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(503).json({ error: "Database Offline. Cannot add products." });
-    }
     const { name, price, tag, size } = req.body;
-    
-    // Cloudinary returns the URL in the 'path' property
     const imageUrl = req.files['image'] ? req.files['image'][0].path : null;
     const videoUrl = req.files['video'] ? req.files['video'][0].path : null;
 
     if (!imageUrl) return res.status(400).json({ error: "Image is required" });
 
-    const newProduct = new Product({ name, price, tag, size, image: imageUrl, video: videoUrl });
-    await newProduct.save();
-    console.log("✅ New Product Added to Cloudinary:", name);
+    const newProduct = await Product.create({ name, price, tag, size, image: imageUrl, video: videoUrl });
     res.status(201).json(newProduct);
   } catch (err) {
-    console.error("❌ Error adding product:", err.message);
     res.status(400).json({ error: err.message });
   }
 });
 
-// 7. Bulk Sync Initial Products
-app.post('/api/products/bulk', async (req, res) => {
-  try {
-    const { products } = req.body;
-    if (!Array.isArray(products)) return res.status(400).json({ error: "Invalid data" });
-
-    if (mongoose.connection.readyState !== 1) return res.status(503).json({ error: 'DB Offline' });
-
-    const results = [];
-    for (const p of products) {
-      // Check if product already exists by name
-      const exists = await Product.findOne({ name: p.name });
-      if (!exists) {
-        // For sync, we use a placeholder or keep the local asset string if it's already a URL
-        const newP = new Product({ 
-          name: p.name, 
-          price: p.price, 
-          tag: p.tag, 
-          image: p.image || 'https://via.placeholder.com/150', // Fallback
-          size: p.size || 'Standard'
-        });
-        await newP.save();
-        results.push(newP);
-      }
-    }
-    res.status(201).json({ message: `Synced ${results.length} new products.`, synced: results });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
 app.get('/api/products', async (req, res) => {
   try {
-    // If DB is not connected, don't hang, just return empty list or initial products fallback
-    if (mongoose.connection.readyState !== 1) {
-      console.warn("⚠️ Database not connected. Returning empty products list.");
-      return res.json([]); 
-    }
-    const products = await Product.find().sort({ createdAt: -1 });
+    const products = await Product.findAll({ order: [['createdAt', 'DESC']] });
     res.json(products);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.json([]);
   }
 });
 
-// 7. Products: Delete Product
 app.delete('/api/products/:id', async (req, res) => {
   try {
-    console.log("🗑️ Attempting to delete product:", req.params.id);
-    const product = await Product.findByIdAndDelete(req.params.id);
-    if (!product) return res.status(404).json({ error: "Product not found" });
-    
-    // Optionally delete the physical file too
-    const filename = product.image.split('/').pop();
-    const filePath = path.join(__dirname, 'uploads', filename);
-    if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-        console.log("📁 File deleted from disk:", filename);
-    }
-    
-    if (product.video) {
-        const vidName = product.video.split('/').pop();
-        const vidPath = path.join(__dirname, 'uploads', vidName);
-        if (fs.existsSync(vidPath)) fs.unlinkSync(vidPath);
-    }
-
+    await Product.destroy({ where: { id: req.params.id } });
     res.json({ message: "Product deleted successfully" });
   } catch (err) {
-    console.error("❌ Delete Error:", err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
-// 9. Products: Update Product (Full Edit with Files)
 app.patch('/api/products/:id', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'video', maxCount: 1 }]), async (req, res) => {
   try {
-    const { name, price, tag, size } = req.body;
-    const updateData = {};
-    if (name) updateData.name = name;
-    if (price) updateData.price = Number(price);
-    if (tag) updateData.tag = tag;
-    if (size) updateData.size = size;
-
+    const updateData = req.body;
     if (req.files) {
       if (req.files['image']) updateData.image = req.files['image'][0].path;
       if (req.files['video']) updateData.video = req.files['video'][0].path;
     }
-
-    if (mongoose.connection.readyState !== 1) {
-      // For local fallback, we update the local array (limited support for new files)
-      const updatedLocal = updateLocal('products.json', req.params.id, updateData);
-      if (updatedLocal) return res.json(updatedLocal);
-      return res.status(503).json({ error: 'DB Offline' });
-    }
-
-    const updated = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
+    await Product.update(updateData, { where: { id: req.params.id } });
+    const updated = await Product.findByPk(req.params.id);
     res.json(updated);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-// 9. Settings: Get Setting
+// 9. Settings
 app.get('/api/settings/:key', async (req, res) => {
   try {
     const { key } = req.params;
-    let setting = null;
-    if (mongoose.connection.readyState === 1) {
-      setting = await Settings.findOne({ key });
-    }
+    const setting = await Settings.findByPk(key);
     
-    if (!setting) {
-      const localSettings = getFromLocal('settings.json');
-      setting = localSettings.find(s => s.key === key);
-    }
-    
-    // Default values if not found or DB offline
     if (!setting && key === 'space-painting-config') {
       const defaultValue = {
         basePrice: 1250,
@@ -422,44 +272,22 @@ app.get('/api/settings/:key', async (req, res) => {
     }
     
     if (!setting) return res.status(404).json({ error: "Setting not found" });
-    res.json(setting);
+    res.json({ key: setting.key, value: JSON.parse(setting.value) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// 10. Settings: Update/Create Setting
 app.post('/api/settings', async (req, res) => {
   try {
     const { key, value } = req.body;
-    
-    if (mongoose.connection.readyState !== 1) {
-      console.warn("⚠️ DB Offline. Saving setting to local JSON.");
-      const filePath = path.join(__dirname, 'backups', 'settings.json');
-      let existing = [];
-      if (fs.existsSync(filePath)) {
-        try { existing = JSON.parse(fs.readFileSync(filePath)); } catch(e) { existing = []; }
-      }
-      const index = existing.findIndex(s => s.key === key);
-      if (index !== -1) existing[index] = { ...existing[index], value, updatedAt: new Date() };
-      else existing.push({ key, value, updatedAt: new Date() });
-      fs.writeFileSync(filePath, JSON.stringify(existing, null, 2));
-      return res.json({ key, value, message: "Saved locally (DB Offline)" });
-    }
-
-    const setting = await Settings.findOneAndUpdate(
-      { key },
-      { value, updatedAt: Date.now() },
-      { upsert: true, new: true }
-    );
+    const [setting] = await Settings.upsert({ key, value: JSON.stringify(value) });
     res.json(setting);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-// Basic Route
-app.get('/', (req, res) => res.send('Artsy Donut Backend API is running - VERSION 2.0 (MODERN)'));
+app.get('/', (req, res) => res.send('Artsy Donut MySQL Backend is running!'));
 
-// Start Server
-app.listen(PORT, () => console.log(`🚀 Server is running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 MySQL Server is running on port ${PORT}`));

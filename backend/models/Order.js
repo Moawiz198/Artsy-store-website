@@ -1,22 +1,58 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../db');
 
-const orderSchema = new mongoose.Schema({
-  customerName: { type: String, required: true },
-  whatsapp: { type: String, required: true },
-  address: { type: String, required: true },
-  paymentMethod: { type: String, required: true },
-  items: [{
-    name: String,
-    price: Number,
-    tag: String
-  }],
-  totalAmount: { type: Number, required: true },
-  advanceAmount: { type: Number, required: true },
-   isPaid: { type: Boolean, default: false },
-   isFullPaid: { type: Boolean, default: false },
-   paymentScreenshot: { type: String }, // Store Cloudinary URL
-   status: { type: String, default: 'Pending Payment' },
-  createdAt: { type: Date, default: Date.now }
+const Order = sequelize.define('Order', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  customerName: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  whatsapp: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  address: {
+    type: DataTypes.TEXT,
+    allowNull: false
+  },
+  paymentMethod: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  items: {
+    type: DataTypes.JSON, // MySQL 5.7+ support JSON
+    allowNull: false
+  },
+  totalAmount: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false
+  },
+  advanceAmount: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false
+  },
+  isPaid: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  isFullPaid: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  paymentScreenshot: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  status: {
+    type: DataTypes.STRING,
+    defaultValue: 'Pending Payment'
+  }
+}, {
+  timestamps: true
 });
 
-module.exports = mongoose.model('Order', orderSchema);
+module.exports = Order;

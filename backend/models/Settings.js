@@ -1,9 +1,17 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../db');
 
-const settingsSchema = new mongoose.Schema({
-  key: { type: String, required: true, unique: true }, // e.g., 'space-painting-config'
-  value: { type: mongoose.Schema.Types.Mixed, required: true },
-  updatedAt: { type: Date, default: Date.now }
+const Settings = sequelize.define('Settings', {
+  key: {
+    type: DataTypes.STRING,
+    primaryKey: true
+  },
+  value: {
+    type: DataTypes.TEXT,
+    allowNull: false
+  }
+}, {
+  timestamps: true
 });
 
-module.exports = mongoose.model('Settings', settingsSchema);
+module.exports = Settings;

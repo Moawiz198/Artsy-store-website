@@ -1,16 +1,50 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../db');
 
-const customRequestSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  whatsapp: { type: String, required: true },
-  instagram: { type: String },
-  surah: { type: String },
-  size: { type: String },
-  colors: { type: String },
-  requirements: { type: String, required: true },
-  image: { type: String }, // New field for reference image
-  status: { type: String, default: 'Pending' },
-  createdAt: { type: Date, default: Date.now }
+const CustomRequest = sequelize.define('CustomRequest', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  whatsapp: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  instagram: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  surah: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  size: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  colors: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  requirements: {
+    type: DataTypes.TEXT,
+    allowNull: false
+  },
+  image: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  status: {
+    type: DataTypes.STRING,
+    defaultValue: 'Pending'
+  }
+}, {
+  timestamps: true
 });
 
-module.exports = mongoose.model('CustomRequest', customRequestSchema);
+module.exports = CustomRequest;

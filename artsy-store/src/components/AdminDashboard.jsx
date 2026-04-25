@@ -264,7 +264,47 @@ export default function AdminDashboard({
         <section style={{marginBottom:48}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:20}}>
             <h2 style={{fontSize:24,color:"#1f2937",margin:0}}>Manage Products ({dbProducts.length})</h2>
-            <div style={{display:"flex",gap:12}}>
+            <div style={{display:"flex",gap:12,alignItems:"center"}}>
+              {/* Bulk Scale Tool */}
+              <div style={{background:"#f3f4f6",padding:"4px 12px",borderRadius:10,display:"flex",alignItems:"center",gap:10,border:"1.5px solid #e5e7eb"}}>
+                <span style={{fontSize:11,fontWeight:700,color:"#6b7280"}}>💰 SCALE PRICES:</span>
+                <select 
+                  onChange={async (e)=>{
+                    const factor = parseFloat(e.target.value);
+                    if(!factor) return;
+                    if(window.confirm(`Are you sure you want to scale ALL prices by ${factor * 100}%? This will update your database instantly.`)) {
+                      try {
+                        const updated = dbProducts.map(p => ({
+                          ...p,
+                          price: Math.round(p.price * factor)
+                        }));
+                        
+                        // Update each product in Supabase
+                        for(const p of updated) {
+                          await supabase.from('products').update({ price: p.price }).eq('id', p.id);
+                        }
+                        
+                        alert("✅ All prices scaled successfully!");
+                        const { data } = await supabase.from('products').select('*').order('createdAt', { ascending: false });
+                        if(data) setDbProducts(data);
+                      } catch(err) { alert("Scaling failed: " + err.message); }
+                    }
+                    e.target.value = ""; // Reset
+                  }}
+                  style={{padding:"4px 8px",borderRadius:6,border:"1px solid #d1d5db",fontSize:11,fontWeight:600}}
+                >
+                  <option value="">Select %</option>
+                  <option value="0.50">50% (Half Price)</option>
+                  <option value="0.60">60%</option>
+                  <option value="0.70">70%</option>
+                  <option value="0.80">80%</option>
+                  <option value="0.90">90%</option>
+                  <option value="1.10">110% (Add 10%)</option>
+                  <option value="1.20">120% (Add 20%)</option>
+                  <option value="2.00">200% (Double)</option>
+                </select>
+              </div>
+
               <button 
                 onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}
                 style={{padding:"8px 16px",borderRadius:8,background:"var(--color-jade)",color:"#fff",fontWeight:700,border:"none",cursor:"pointer",boxShadow:"0 4px 12px rgba(10,31,20,0.2)"}}

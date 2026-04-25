@@ -264,44 +264,14 @@ export default function AdminDashboard({
         <section style={{marginBottom:48}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:20}}>
             <h2 style={{fontSize:24,color:"#1f2937",margin:0}}>Manage Products ({dbProducts.length})</h2>
-            {dbProducts.length === 0 && (
+            <div style={{display:"flex",gap:12}}>
               <button 
-                onClick={async ()=>{
-                  if(window.confirm("Sync all listed shop items to Database?")) {
-                    try {
-                      // Prepare products: remove local ID and ensure images are clean strings
-                      const toInsert = initialProducts.map(p => ({
-                        name: p.name,
-                        price: p.price,
-                        tag: p.tag,
-                        image: typeof p.image === 'string' && p.image.startsWith('http') 
-                          ? p.image 
-                          : 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=1000',
-                        size: p.size || 'Standard'
-                      }));
-                      
-                      console.log("Attempting to sync:", toInsert);
-                      const { data: insertData, error } = await supabase.from('products').insert(toInsert).select();
-                      
-                      if(!error) { 
-                        alert("✅ Success! " + toInsert.length + " products synced."); 
-                        const { data } = await supabase.from('products').select('*').order('createdAt', { ascending: false });
-                        if(data) setDbProducts(data);
-                      } else {
-                        console.error("Supabase Sync Error:", error);
-                        alert("❌ Sync Error: " + error.message + " (" + error.details + ")");
-                      }
-                    } catch(e) { 
-                      console.error("Fetch Error:", e);
-                      alert("⚠️ Network Error: Unable to reach the database. Please check your internet or try again."); 
-                    }
-                  }
-                }}
-                style={{padding:"8px 16px",borderRadius:8,background:"#fff",border:"1.5px solid #6366f1",color:"#6366f1",fontWeight:600,cursor:"pointer"}}
+                onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}
+                style={{padding:"8px 16px",borderRadius:8,background:"var(--color-jade)",color:"#fff",fontWeight:700,border:"none",cursor:"pointer",boxShadow:"0 4px 12px rgba(10,31,20,0.2)"}}
               >
-                📥 Sync Listed Items to DB
+                ➕ ADD NEW PRODUCT
               </button>
-            )}
+            </div>
           </div>
           <div className="admin-table-container" style={{background:"#fff",borderRadius:12,boxShadow:"0 4px 6px -1px rgba(0,0,0,0.1)",overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",textAlign:"left"}}>

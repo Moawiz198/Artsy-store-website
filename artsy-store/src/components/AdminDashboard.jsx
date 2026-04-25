@@ -264,25 +264,6 @@ export default function AdminDashboard({
         <section style={{marginBottom:48}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:20}}>
             <h2 style={{fontSize:24,color:"#1f2937",margin:0}}>Manage Products ({dbProducts.length})</h2>
-            {dbProducts.length === 0 && (
-              <button 
-                onClick={async ()=>{
-                  if(window.confirm("Sync all listed shop items to Database?")) {
-                    try {
-                      const { error } = await supabase.from('products').insert(initialProducts);
-                      if(!error) { 
-                        alert("Products synced!"); 
-                        const { data } = await supabase.from('products').select('*').order('createdAt', { ascending: false });
-                        if(data) setDbProducts(data);
-                      } else throw error;
-                    } catch(e) { alert("Sync failed: " + e.message); }
-                  }
-                }}
-                style={{padding:"8px 16px",borderRadius:8,background:"#fff",border:"1.5px solid #6366f1",color:"#6366f1",fontWeight:600,cursor:"pointer"}}
-              >
-                📥 Sync Listed Items to DB
-              </button>
-            )}
           </div>
           <div className="admin-table-container" style={{background:"#fff",borderRadius:12,boxShadow:"0 4px 6px -1px rgba(0,0,0,0.1)",overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",textAlign:"left"}}>

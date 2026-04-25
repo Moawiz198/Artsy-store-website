@@ -25,7 +25,7 @@ export default function Contact() {
               <span className="contact-detail-icon">📍</span>
               <div>
                 <p className="contact-detail-label">Location</p>
-                <p className="contact-detail-value">Lahore, Pakistan</p>
+                <p className="contact-detail-value">Rahim Yar Khan, Punjab, Pakistan</p>
               </div>
             </div>
           </div>

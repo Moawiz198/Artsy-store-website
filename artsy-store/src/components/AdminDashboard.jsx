@@ -268,20 +268,32 @@ export default function AdminDashboard({
               <button 
                 onClick={async ()=>{
                   if(window.confirm("Sync all listed shop items to Database?")) {
-                    try {
                       // Prepare products: remove local ID and ensure images are clean strings
-                      const toInsert = initialProducts.map(({id, ...rest}) => ({
-                        ...rest,
-                        image: typeof rest.image === 'string' ? rest.image : 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=1000' // Use fallback if it's a local import
+                      const toInsert = initialProducts.map(p => ({
+                        name: p.name,
+                        price: p.price,
+                        tag: p.tag,
+                        image: typeof p.image === 'string' && p.image.startsWith('http') 
+                          ? p.image 
+                          : 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=1000',
+                        size: p.size || 'Standard'
                       }));
                       
-                      const { error } = await supabase.from('products').insert(toInsert);
+                      console.log("Attempting to sync:", toInsert);
+                      const { data: insertData, error } = await supabase.from('products').insert(toInsert).select();
+                      
                       if(!error) { 
-                        alert("Products synced!"); 
+                        alert("✅ Success! " + toInsert.length + " products synced."); 
                         const { data } = await supabase.from('products').select('*').order('createdAt', { ascending: false });
                         if(data) setDbProducts(data);
-                      } else throw error;
-                    } catch(e) { alert("Sync failed: " + e.message); }
+                      } else {
+                        console.error("Supabase Sync Error:", error);
+                        alert("❌ Sync Error: " + error.message + " (" + error.details + ")");
+                      }
+                    } catch(e) { 
+                      console.error("Fetch Error:", e);
+                      alert("⚠️ Network Error: Unable to reach the database. Please check your internet or try again."); 
+                    }
                   }
                 }}
                 style={{padding:"8px 16px",borderRadius:8,background:"#fff",border:"1.5px solid #6366f1",color:"#6366f1",fontWeight:600,cursor:"pointer"}}

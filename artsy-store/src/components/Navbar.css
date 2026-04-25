@@ -94,9 +94,11 @@
 }
 
 @media (max-width: 768px) {
-  .navbar-container { height: auto; padding: 12px 20px; flex-direction: column; gap: 12px; }
-  .nav-links { gap: 16px; flex-wrap: wrap; justify-content: center; }
-  .navbar-brand { font-size: 20px; }
-  .cart-button { padding: 6px 12px; font-size: 12px; }
-  .nav-link { font-size: 11px; }
+  .navbar-container { padding: 0 16px; height: 70px; }
+  .navbar-links { display: none; } /* Hide text links on mobile for cleaner look */
+  .logo-text { font-size: 18px; letter-spacing: 1px; }
+  .navbar-logo img { width: 32px; height: 32px; }
+  .cart-trigger { padding: 6px 12px; }
+  .cart-icon { font-size: 14px; }
+  .cart-count { font-size: 11px; }
 }

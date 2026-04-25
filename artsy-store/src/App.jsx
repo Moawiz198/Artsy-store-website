@@ -107,8 +107,26 @@ export default function ArtStore() {
     }
   }, [view, adminAuth]);
 
-  const addToCart = (p) => setCart(c => [...c, p]);
-  const removeFromCart = (i) => setCart(c => c.filter((_,idx)=>idx!==i));
+  const [toast, setToast] = useState(null);
+
+  const addToCart = (p) => {
+    setCart(c => {
+      const newCart = [...c, p];
+      localStorage.setItem('artsy_cart', JSON.stringify(newCart));
+      return newCart;
+    });
+    setToast(`✅ ${p.name} added to cart! Please checkout now.`);
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const removeFromCart = (i) => {
+    setCart(c => {
+      const newCart = c.filter((_,idx)=>idx!==i);
+      localStorage.setItem('artsy_cart', JSON.stringify(newCart));
+      return newCart;
+    });
+  };
+
   const total = cart.reduce((s,i)=>s+i.price,0);
   const advance = Math.round(total * 0.70);
 
@@ -119,6 +137,27 @@ export default function ArtStore() {
   return (
     <div style={{fontFamily:"var(--font-sans)",background:"var(--color-cream)",minHeight:"100vh",overflowX:"hidden"}}>
       {loading && <Preloader onFinish={() => setLoading(false)} />}
+
+      {/* Cart Notification Toast */}
+      {toast && (
+        <div style={{
+          position: 'fixed', 
+          bottom: 40, 
+          left: '50%', 
+          transform: 'translateX(-50%)', 
+          background: 'var(--color-jade)', 
+          color: 'var(--color-gold)', 
+          padding: '16px 32px', 
+          borderRadius: 50, 
+          zIndex: 5000,
+          boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+          fontWeight: 700,
+          fontSize: 14,
+          animation: 'slideUp 0.4s ease-out'
+        }}>
+          {toast}
+        </div>
+      )}
 
       {view === 'admin' ? (
         adminAuth ? (

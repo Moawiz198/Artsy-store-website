@@ -15,11 +15,11 @@ export default function Navbar({ logo, cartCount, setCartOpen, setView, setCusto
           <button onClick={() => setCustomModalOpen(true)} className="nav-link" style={{background:'none', border:'none', cursor:'pointer', padding:0, fontFamily:'inherit'}}>CUSTOM ORDERS</button>
           <a href="#about" className="nav-link">ABOUT</a>
           <a href="#contact" className="nav-link">CONTACT</a>
-          
-          <div className="cart-trigger" onClick={() => setCartOpen(true)}>
-            <span className="cart-icon">🛒</span>
-            <span className="cart-count">{cartCount}</span>
-          </div>
+        </div>
+
+        <div className="cart-trigger" onClick={() => setCartOpen(true)}>
+          <span className="cart-icon">🛒</span>
+          <span className="cart-count">{cartCount}</span>
         </div>
       </div>
     </nav>

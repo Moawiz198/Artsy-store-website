@@ -268,6 +268,7 @@ export default function AdminDashboard({
               <button 
                 onClick={async ()=>{
                   if(window.confirm("Sync all listed shop items to Database?")) {
+                    try {
                       // Prepare products: remove local ID and ensure images are clean strings
                       const toInsert = initialProducts.map(p => ({
                         name: p.name,

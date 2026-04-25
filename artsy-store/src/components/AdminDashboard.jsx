@@ -277,7 +277,7 @@ export default function AdminDashboard({
               </thead>
               <tbody>
                 {Array.isArray(dbProducts) && dbProducts.map(p=>(
-                  <tr key={p.id} style={{borderBottom:"1px solid #f3f4f6"}}>
+                  <tr key={p.id} style={{borderBottom:"1  px solid #f3f4f6"}}>
                     <td style={{padding:"16px 24px",display:"flex",alignItems:"center",gap:12}}>
                       <img src={p.image} style={{width:40,height:40,borderRadius:4,objectFit:"cover"}} alt={p.name} />
                       <div style={{fontWeight:600}}>{p.name}</div>

@@ -22,7 +22,7 @@ export default function AdminDashboard({
             <div style={{display:"flex",alignItems:"center",gap:8,marginTop:8}}>
               <div style={{width:10,height:10,borderRadius:"50%",background: "#10b981"}}></div>
               <span style={{fontSize:12,color:"#6b7280",fontWeight:600}}>
-                Server Port: 5055 (Active)
+                Database Connection: Supabase (Live)
               </span>
             </div>
             <p style={{color:"#6b7280",marginTop:4}}>Manage your shop, orders, and custom requests.</p>

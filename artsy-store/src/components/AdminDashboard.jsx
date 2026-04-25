@@ -1,4 +1,5 @@
 import React from 'react';
+import { supabase } from '../supabaseClient';
 
 export default function AdminDashboard({ 
   orders, setOrders, 
@@ -7,17 +8,17 @@ export default function AdminDashboard({
   setAdminAuth, setView,
   initialProducts = []
 }) {
+
   const [editingProduct, setEditingProduct] = React.useState(null);
   const [slipData, setSlipData] = React.useState(null);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5055';
 
   return (
     <div style={{background:"#f3f4f6",minHeight:"100vh",padding:40,fontFamily:"var(--font-sans)"}}>
       <div style={{maxWidth:1200,margin:"0 auto"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:40}}>
           <div>
-            <h1 style={{fontSize:32,fontWeight:800,color:"var(--color-jade)",margin:0}}>Owner Dashboard</h1>
+            <h1 style={{fontSize:32,fontWeight:800,color:"var(--color-jade)",margin:0}}><span style={{fontWeight:900}}>Aferay Sajid</span> Dashboard</h1>
             <div style={{display:"flex",alignItems:"center",gap:8,marginTop:8}}>
               <div style={{width:10,height:10,borderRadius:"50%",background: "#10b981"}}></div>
               <span style={{fontSize:12,color:"#6b7280",fontWeight:600}}>
@@ -27,14 +28,18 @@ export default function AdminDashboard({
             <p style={{color:"#6b7280",marginTop:4}}>Manage your shop, orders, and custom requests.</p>
           </div>
           <div style={{display:"flex",gap:12}}>
-            <button onClick={()=>{
-              fetch(`${API_URL}/api/orders`).then(r=>r.json()).then(setOrders);
-              fetch(`${API_URL}/api/custom-requests`).then(r=>r.json()).then(setRequests);
-              fetch(`${API_URL}/api/products`).then(r=>r.json()).then(setDbProducts);
+            <button onClick={async ()=>{
+              const { data: o } = await supabase.from('orders').select('*').order('createdAt', { ascending: false });
+              const { data: r } = await supabase.from('custom_requests').select('*').order('createdAt', { ascending: false });
+              const { data: p } = await supabase.from('products').select('*').order('createdAt', { ascending: false });
+              if (o) setOrders(o);
+              if (r) setRequests(r);
+              if (p) setDbProducts(p);
               alert("Data Refreshed!");
             }} style={{padding:"12px 20px",borderRadius:10,background:"#fff",border:"1.5px solid #e5e7eb",fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",gap:8}}>
               🔄 Refresh
             </button>
+
             <button onClick={()=>{setAdminAuth(false); setView('home');}} style={{padding:"12px 20px",borderRadius:10,background:"#ef4444",color:"#fff",border:"none",fontWeight:600,cursor:"pointer"}}>
               Logout
             </button>
@@ -94,39 +99,55 @@ export default function AdminDashboard({
                     </td>
                     <td style={{padding:"16px 24px"}}>
                       <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                        <div style={{display:"flex", gap: 4}}>
+                          <button 
+                            onClick={async ()=>{
+                              try {
+                                const { error } = await supabase.from('orders').update({ isPaid: !o.isPaid }).eq('id', o.id);
+                                if(!error) {
+                                  alert("Advance status updated!");
+                                  const { data } = await supabase.from('orders').select('*').order('createdAt', { ascending: false });
+                                  if(data) setOrders(data);
+                                }
+                              } catch(e) { alert("Supabase error"); }
+                            }}
+                            style={{flex:1, padding:"6px 10px",borderRadius:6,border:"none",background: o.isPaid ? "#10b981" : "#ef4444",color: "#fff",fontSize:10,fontWeight:700,cursor:"pointer"}}>
+                            ADV: {o.isPaid ? "PAID" : "UNPAID"}
+                          </button>
+                          <button 
+                            onClick={async ()=>{
+                              try {
+                                const { error } = await supabase.from('orders').update({ isFullPaid: !o.isFullPaid }).eq('id', o.id);
+                                if(!error) {
+                                  alert("Full payment status updated!");
+                                  const { data } = await supabase.from('orders').select('*').order('createdAt', { ascending: false });
+                                  if(data) setOrders(data);
+                                }
+                              } catch(e) { alert("Supabase error"); }
+                            }}
+                            style={{flex:1, padding:"6px 10px",borderRadius:6,border:"none",background: o.isFullPaid ? "#10b981" : "#ef4444",color: "#fff",fontSize:10,fontWeight:700,cursor:"pointer"}}>
+                            FULL: {o.isFullPaid ? "PAID" : "UNPAID"}
+                          </button>
+                        </div>
                         <button 
-                          onClick={async ()=>{
-                            try {
-                              const res = await fetch(`${API_URL}/api/orders/${o.id}`, {
-                                method: 'PATCH',
-                                headers: {'Content-Type':'application/json'},
-                                body: JSON.stringify({isPaid: !o.isPaid})
+                          onClick={() => {
+                            const newTotal = prompt("Update Total Price (Rs.)", o.totalAmount);
+                            const newAdv = prompt("Update Advance Price (Rs.)", o.advanceAmount);
+                            if (newTotal !== null && newAdv !== null) {
+                              supabase.from('orders').update({ 
+                                totalAmount: Number(newTotal), 
+                                advanceAmount: Number(newAdv) 
+                              }).eq('id', o.id).then(({error}) => {
+                                if(!error) {
+                                  alert("Order Updated!");
+                                  supabase.from('orders').select('*').order('createdAt', { ascending: false }).then(({data})=>setOrders(data));
+                                }
                               });
-                              if(res.ok) {
-                                alert("Advance status updated!");
-                                fetch(`${API_URL}/api/orders`).then(r=>r.json()).then(setOrders);
-                              }
-                            } catch(e) { alert("Server error"); }
+                            }
                           }}
-                          style={{padding:"6px 10px",borderRadius:6,border:"none",background: o.isPaid ? "#10b981" : "#ef4444",color: "#fff",fontSize:10,fontWeight:700,cursor:"pointer"}}>
-                          ADV: {o.isPaid ? "PAID" : "UNPAID"}
-                        </button>
-                        <button 
-                          onClick={async ()=>{
-                            try {
-                              const res = await fetch(`${API_URL}/api/orders/${o.id}`, {
-                                method: 'PATCH',
-                                headers: {'Content-Type':'application/json'},
-                                body: JSON.stringify({isFullPaid: !o.isFullPaid})
-                              });
-                              if(res.ok) {
-                                alert("Full payment status updated!");
-                                fetch(`${API_URL}/api/orders`).then(r=>r.json()).then(setOrders);
-                              }
-                            } catch(e) { alert("Server error"); }
-                          }}
-                          style={{padding:"6px 10px",borderRadius:6,border:"none",background: o.isFullPaid ? "#10b981" : "#ef4444",color: "#fff",fontSize:10,fontWeight:700,cursor:"pointer"}}>
-                          FULL: {o.isFullPaid ? "PAID" : "UNPAID"}
+                          style={{width:"100%", padding:"6px", borderRadius:6, border:"1.5px solid #6366f1", color:"#6366f1", background:"#fff", fontSize:10, fontWeight:700, cursor:"pointer"}}
+                        >
+                          ✏️ EDIT PRICES
                         </button>
                       </div>
                     </td>
@@ -148,17 +169,44 @@ export default function AdminDashboard({
           <form onSubmit={async (e)=>{
             e.preventDefault();
             const formData = new FormData(e.target);
+            const imageFile = formData.get('image');
+            const videoFile = formData.get('video');
+            
             try {
-              const res = await fetch(`${API_URL}/api/products`, { method: 'POST', body: formData });
-              if(res.ok) { 
-                alert("Product Added Successfully!"); 
-                e.target.reset(); 
-                fetch(`${API_URL}/api/products`).then(r=>r.json()).then(setDbProducts);
-              } else {
-                const err = await res.json();
-                alert(err.error || "Failed to add product");
+              let imageUrl = '';
+              let videoUrl = null;
+
+              if (imageFile && imageFile.size > 0) {
+                const ext = imageFile.name.split('.').pop();
+                const path = `products/${Date.now()}.${ext}`;
+                const { error: upError } = await supabase.storage.from('products').upload(path, imageFile);
+                if (upError) throw new Error("Image Upload Failed: " + upError.message);
+                imageUrl = supabase.storage.from('products').getPublicUrl(path).data.publicUrl;
               }
-            } catch(e) { alert("Error connecting to server"); }
+
+              if (videoFile && videoFile.size > 0) {
+                const ext = videoFile.name.split('.').pop();
+                const path = `products/${Date.now()}.${ext}`;
+                const { error: vidError } = await supabase.storage.from('products').upload(path, videoFile);
+                if (vidError) throw new Error("Video Upload Failed: " + vidError.message);
+                videoUrl = supabase.storage.from('products').getPublicUrl(path).data.publicUrl;
+              }
+
+              const { error } = await supabase.from('products').insert([{
+                name: formData.get('name'),
+                price: Number(formData.get('price')),
+                tag: formData.get('tag'),
+                size: formData.get('size'),
+                image: imageUrl,
+                video: videoUrl
+              }]);
+
+              if(error) throw error;
+              alert("Product Added Successfully!"); 
+              e.target.reset(); 
+              const { data } = await supabase.from('products').select('*').order('createdAt', { ascending: false });
+              if(data) setDbProducts(data);
+            } catch(err) { alert("Error: " + err.message); }
           }} style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(200px, 1fr))",gap:20}}>
             <div style={{display:"flex",flexDirection:"column",gap:6}}>
               <label style={{fontSize:11,fontWeight:700,color:"#666"}}>NAME</label>
@@ -219,15 +267,15 @@ export default function AdminDashboard({
             {dbProducts.length === 0 && (
               <button 
                 onClick={async ()=>{
-                  if(window.confirm("Copy all listed shop items to Database so you can edit them?")) {
+                  if(window.confirm("Sync all listed shop items to Database?")) {
                     try {
-                      const res = await fetch(`${API_URL}/api/products/bulk`, {
-                        method: 'POST',
-                        headers: {'Content-Type':'application/json'},
-                        body: JSON.stringify({ products: initialProducts })
-                      });
-                      if(res.ok) { alert("Products synced!"); fetch(`${API_URL}/api/products`).then(r=>r.json()).then(setDbProducts); }
-                    } catch(e) { alert("Sync failed"); }
+                      const { error } = await supabase.from('products').insert(initialProducts);
+                      if(!error) { 
+                        alert("Products synced!"); 
+                        const { data } = await supabase.from('products').select('*').order('createdAt', { ascending: false });
+                        if(data) setDbProducts(data);
+                      } else throw error;
+                    } catch(e) { alert("Sync failed: " + e.message); }
                   }
                 }}
                 style={{padding:"8px 16px",borderRadius:8,background:"#fff",border:"1.5px solid #6366f1",color:"#6366f1",fontWeight:600,cursor:"pointer"}}
@@ -260,12 +308,12 @@ export default function AdminDashboard({
                         const newPrice = prompt("Update Price for " + p.name, p.price);
                         if(newPrice) {
                           try {
-                            const res = await fetch(`${API_URL}/api/products/${p.id}`, {
-                              method: 'PATCH',
-                              headers: {'Content-Type':'application/json'},
-                              body: JSON.stringify({ price: Number(newPrice) })
-                            });
-                            if(res.ok) { alert("Price updated!"); fetch(`${API_URL}/api/products`).then(r=>r.json()).then(setDbProducts); }
+                            const { error } = await supabase.from('products').update({ price: Number(newPrice) }).eq('id', p.id);
+                            if(!error) { 
+                              alert("Price updated!"); 
+                              const { data } = await supabase.from('products').select('*').order('createdAt', { ascending: false });
+                              if(data) setDbProducts(data);
+                            }
                           } catch(e) { alert("Error"); }
                         }
                       }} style={{padding:"6px 10px",borderRadius:6,border:"1.5px solid #10b981",color:"#10b981",background:"#fff",fontSize:11,fontWeight:700,cursor:"pointer"}}>💰 Price</button>
@@ -274,8 +322,11 @@ export default function AdminDashboard({
                       
                       <button onClick={async ()=>{
                         if(window.confirm("Delete?")) {
-                          await fetch(`${API_URL}/api/products/${p.id}`, { method: 'DELETE' });
-                          fetch(`${API_URL}/api/products`).then(r=>r.json()).then(setDbProducts);
+                          const { error } = await supabase.from('products').delete().eq('id', p.id);
+                          if(!error) {
+                            const { data } = await supabase.from('products').select('*').order('createdAt', { ascending: false });
+                            if(data) setDbProducts(data);
+                          }
                         }
                       }} style={{padding:"6px 10px",borderRadius:6,background:"#fee2e2",color:"#ef4444",border:"none",fontSize:11,fontWeight:700,cursor:"pointer"}}>🗑️</button>
                     </td>
@@ -322,13 +373,24 @@ export default function AdminDashboard({
                       <div style={{display:"flex",flexDirection:"column",gap:8}}>
                         <div style={{display:"flex",gap:4}}>
                           <button onClick={async ()=>{
-                            await fetch(`${API_URL}/api/custom-requests/${r.id}`, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ status: 'Accepted' }) });
-                            fetch(`${API_URL}/api/custom-requests`).then(r=>r.json()).then(setRequests);
-                          }} style={{flex:1,padding:6,borderRadius:4,background:"#10b981",color:"#fff",border:"none",fontSize:10}}>Accept</button>
+                            await supabase.from('custom_requests').update({ status: 'Accepted' }).eq('id', r.id);
+                            const { data } = await supabase.from('custom_requests').select('*').order('createdAt', { ascending: false });
+                            if(data) setRequests(data);
+                          }} style={{flex:1,padding:6,borderRadius:4,background:"#10b981",color:"#fff",border:"none",fontSize:10,cursor:"pointer"}}>Accept</button>
+                          
                           <button onClick={async ()=>{
-                            await fetch(`${API_URL}/api/custom-requests/${r.id}`, { method: 'DELETE' });
-                            fetch(`${API_URL}/api/custom-requests`).then(r=>r.json()).then(setRequests);
-                          }} style={{flex:1,padding:6,borderRadius:4,background:"#ef4444",color:"#fff",border:"none",fontSize:10}}>Reject</button>
+                            await supabase.from('custom_requests').update({ status: 'Rejected' }).eq('id', r.id);
+                            const { data } = await supabase.from('custom_requests').select('*').order('createdAt', { ascending: false });
+                            if(data) setRequests(data);
+                          }} style={{flex:1,padding:6,borderRadius:4,background:"#f59e0b",color:"#fff",border:"none",fontSize:10,cursor:"pointer"}}>Reject</button>
+ 
+                          <button onClick={async ()=>{
+                            if(window.confirm("Permanently delete this request?")) {
+                              await supabase.from('custom_requests').delete().eq('id', r.id);
+                              const { data } = await supabase.from('custom_requests').select('*').order('createdAt', { ascending: false });
+                              if(data) setRequests(data);
+                            }
+                          }} style={{padding:6,borderRadius:4,background:"#fee2e2",color:"#ef4444",border:"none",fontSize:10,cursor:"pointer"}}>🗑️</button>
                         </div>
                         <button onClick={()=>{
                           const isArt = r.category !== 'Crochet';
@@ -368,8 +430,37 @@ export default function AdminDashboard({
             <form onSubmit={async (e)=>{
               e.preventDefault();
               const formData = new FormData(e.target);
-              const res = await fetch(`${API_URL}/api/products/${editingProduct.id}`, { method: 'PATCH', body: formData });
-              if(res.ok) { setEditingProduct(null); fetch(`${API_URL}/api/products`).then(r=>r.json()).then(setDbProducts); }
+              const updateData = {
+                name: formData.get('name'),
+                price: Number(formData.get('price')),
+                tag: formData.get('tag'),
+                size: formData.get('size')
+              };
+
+              const imgFile = formData.get('image');
+              const vidFile = formData.get('video');
+
+              try {
+                if (imgFile && imgFile.size > 0) {
+                  const ext = imgFile.name.split('.').pop();
+                  const path = `products/${Date.now()}.${ext}`;
+                  await supabase.storage.from('products').upload(path, imgFile);
+                  updateData.image = supabase.storage.from('products').getPublicUrl(path).data.publicUrl;
+                }
+                if (vidFile && vidFile.size > 0) {
+                  const ext = vidFile.name.split('.').pop();
+                  const path = `products/${Date.now()}.${ext}`;
+                  await supabase.storage.from('products').upload(path, vidFile);
+                  updateData.video = supabase.storage.from('products').getPublicUrl(path).data.publicUrl;
+                }
+
+                const { error } = await supabase.from('products').update(updateData).eq('id', editingProduct.id);
+                if(!error) {
+                  setEditingProduct(null); 
+                  const { data } = await supabase.from('products').select('*').order('createdAt', { ascending: false });
+                  if(data) setDbProducts(data);
+                } else throw error;
+              } catch(err) { alert("Error: " + err.message); }
             }} style={{display:"flex",flexDirection:"column",gap:16}}>
               <input name="name" defaultValue={editingProduct.name} placeholder="Name" required style={{padding:10,borderRadius:8,border:"1px solid #eee"}}/>
               <input name="price" type="number" defaultValue={editingProduct.price} placeholder="Price" required style={{padding:10,borderRadius:8,border:"1px solid #eee"}}/>

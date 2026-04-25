@@ -1,4 +1,5 @@
 import React from 'react';
+import { supabase } from '../supabaseClient';
 import './Contact.css';
 
 export default function Contact() {
@@ -33,27 +34,22 @@ export default function Contact() {
         <form className="contact-form" onSubmit={async (e) => { 
           e.preventDefault(); 
           const data = new FormData(e.target);
-          const formData = {
-            name: data.get('name'),
-            whatsapp: data.get('whatsapp'),
-            requirements: data.get('message'),
-            surah: "General Inquiry",
-            size: "N/A"
-          };
           try {
-            const res = await fetch('http://localhost:5055/api/custom-request', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(formData)
-            });
-            if (res.ok) {
+            const { error } = await supabase.from('custom_requests').insert([{
+              name: data.get('name'),
+              whatsapp: data.get('whatsapp'),
+              requirements: data.get('message'),
+              surah: "General Inquiry",
+              size: "N/A",
+              status: 'Pending'
+            }]);
+
+            if (!error) {
               alert("Message sent! I will get back to you on Instagram DM.");
               e.target.reset();
-            } else {
-              alert("Server error. Please try again or message on Instagram.");
-            }
+            } else throw error;
           } catch (err) {
-            alert("Error connecting to server. Please check your connection.");
+            alert("Error: " + err.message);
           }
         }}>
           <div className="form-group">

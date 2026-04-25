@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { supabase } from '../supabaseClient';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5055';
 
 export default function ConfigurableProductModal({ product, addToCart, onClose }) {
   const [config, setConfig] = useState(null);
@@ -10,9 +10,8 @@ export default function ConfigurableProductModal({ product, addToCart, onClose }
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/settings/space-painting-config`)
-      .then(r => r.json())
-      .then(data => {
+    supabase.from('settings').select('*').eq('key', 'space-painting-config').single()
+      .then(({ data }) => {
         if (data && data.value) setConfig(data.value);
         setLoading(false);
       })
@@ -52,22 +51,14 @@ export default function ConfigurableProductModal({ product, addToCart, onClose }
       requirements = reqInput?.value || "";
 
       if (imgInput?.files[0]) {
-        const formData = new FormData();
-        formData.append('image', imgInput.files[0]);
-        formData.append('name', 'Temp Cart Upload');
-        formData.append('whatsapp', 'Cart');
-        formData.append('requirements', 'Cart Item Reference');
-        
+        const file = imgInput.files[0];
         try {
-          const res = await fetch(`${API_URL}/api/custom-request`, {
-            method: 'POST',
-            body: formData
-          });
-          const result = await res.json();
-          // We assume the backend returns the imageUrl or we fetch it from the record
-          // For now, let's just use the result message or assume it worked.
-          // Ideally, the backend should return the new image URL.
-          // Let's modify the backend to return the URL in the next step.
+          const ext = file.name.split('.').pop();
+          const path = `cart-refs/${Date.now()}.${ext}`;
+          const { error: uploadError } = await supabase.storage.from('orders').upload(path, file);
+          if (uploadError) throw uploadError;
+          const { data: { publicUrl } } = supabase.storage.from('orders').getPublicUrl(path);
+          imageUrl = publicUrl;
         } catch (e) { console.error("Upload failed", e); }
       }
     }

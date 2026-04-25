@@ -102,7 +102,14 @@ const CheckoutModal = ({ setCheckoutOpen, cart, total, advance, setLastOrderId, 
           </div>
 
           <input name="customerName" placeholder="Full Name" required style={{padding:"14px",borderRadius:10,border:"1.5px solid #eee"}}/>
-          <input name="whatsapp" placeholder="WhatsApp Number" required style={{padding:"14px",borderRadius:10,border:"1.5px solid #eee"}}/>
+          <input 
+            name="whatsapp" 
+            type="tel"
+            placeholder="WhatsApp Number" 
+            required 
+            onInput={(e) => e.target.value = e.target.value.replace(/[^0-9]/g, '')}
+            style={{padding:"14px",borderRadius:10,border:"1.5px solid #eee"}}
+          />
           <textarea name="address" placeholder="Shipping Address" rows={3} required style={{padding:"14px",borderRadius:10,border:"1.5px solid #eee"}}/>
           
           <div style={{padding:16, border:"1px dashed var(--color-gold)", borderRadius:10, background:"#fffaf0"}}>

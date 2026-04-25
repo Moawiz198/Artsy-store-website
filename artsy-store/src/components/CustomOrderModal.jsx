@@ -78,7 +78,14 @@ const CustomOrderModal = ({ setCustomModalOpen }) => {
             
             <input name="name" placeholder="Full Name" required style={{padding:14,borderRadius:10,border:"1.5px solid #eee"}}/>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-              <input name="whatsapp" placeholder="WhatsApp Number" required style={{padding:14,borderRadius:10,border:"1.5px solid #eee"}}/>
+              <input 
+                name="whatsapp" 
+                type="tel"
+                placeholder="WhatsApp Number" 
+                required 
+                onInput={(e) => e.target.value = e.target.value.replace(/[^0-9]/g, '')}
+                style={{padding:14,borderRadius:10,border:"1.5px solid #eee"}}
+              />
               <input name="instagram" placeholder="Instagram (Optional)" style={{padding:14,borderRadius:10,border:"1.5px solid #eee"}}/>
             </div>
 

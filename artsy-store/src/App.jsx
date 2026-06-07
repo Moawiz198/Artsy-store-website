@@ -131,7 +131,7 @@ export default function ArtStore() {
   const advance = Math.round(total * 0.70);
 
   const allProducts = [...initialProducts, ...dbProducts];
-  const tags = ['All', ...new Set(allProducts.map(p => p.tag)), 'Crochet'];
+  const tags = ['All', ...new Set([...allProducts.map(p => p.tag), 'Crochet'])];
   const visible = activeTag === 'All' ? allProducts : allProducts.filter(p => p.tag === activeTag);
 
   return (
